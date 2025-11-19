@@ -2138,6 +2138,9 @@
             if (child.geometry) child.geometry.dispose();
             if (child.material) child.material.dispose();
           });
+          // preview 랙의 유령 셀과 라벨 정리
+          cellMeshes = cellMeshes.filter((mesh) => mesh.userData.rackId !== 'preview');
+          labelSprites = labelSprites.filter((sprite) => sprite.userData.rackId !== 'preview');
         }
 
         const pillarColor = parseInt(
@@ -6072,10 +6075,17 @@
           if (child.geometry) child.geometry.dispose();
           if (child.material) child.material.dispose();
         });
-        cellMeshes = cellMeshes.filter((mesh) => mesh.userData.rackId !== 'temp');
-        labelSprites = labelSprites.filter((sprite) => sprite.userData.rackId !== 'temp');
+        // 'temp' 및 'preview' rackId를 가진 유령 셀과 라벨 제거
+        cellMeshes = cellMeshes.filter(
+          (mesh) => mesh.userData.rackId !== 'temp' && mesh.userData.rackId !== 'preview'
+        );
+        labelSprites = labelSprites.filter(
+          (sprite) => sprite.userData.rackId !== 'temp' && sprite.userData.rackId !== 'preview'
+        );
         renderer.dispose();
-        racks = racks.filter((r) => r.userData.rackId !== 'temp'); // 혹시 모를 경우 제거
+        racks = racks.filter(
+          (r) => r.userData.rackId !== 'temp' && r.userData.rackId !== 'preview'
+        );
 
         return thumbnailUrl;
       }
