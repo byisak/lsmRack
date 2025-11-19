@@ -2589,6 +2589,9 @@
         // 그리고 초기값(checked 상태)을 반영하려면 한 번 실행
         updateShadowQuality();
 
+        // FPS 토글 초기화 (stats가 초기화된 후 실행)
+        initializeFPSToggle();
+
         animate();
         setEditMode(false); // 최초 실행은 뷰어 모드
         updateCellVisibility();
@@ -6192,63 +6195,45 @@
         });
       }
 
-      const fpsToggle = document.getElementById('fps-toggle');
-      const fpsStatusIndicator = document.getElementById('fps-status-indicator');
+      // FPS 토글 초기화 함수
+      function initializeFPSToggle() {
+        const fpsToggle = document.getElementById('fps-toggle');
+        const fpsStatusIndicator = document.getElementById('fps-status-indicator');
 
-      // --- THIS IS THE CRUCIAL PART ---
-      // Ensure 'stats' is your initialized stats.js instance.
-      // Or, if your monitor element has a specific ID, use:
-      // const performanceMonitorElement = document.getElementById('your-monitor-id');
-
-      // Guard: stats가 초기화되었는지 확인
-      let performanceMonitorElement = null;
-      if (stats && stats.dom) {
-        if (!document.body.contains(stats.dom)) {
-          document.body.appendChild(stats.dom);
-        }
-        performanceMonitorElement = stats.dom; // Assign the DOM element
-      } else {
-        console.warn('stats is not initialized yet');
-      }
-      // --- END CRUCIAL PART ---
-
-      function updatePerformanceMonitorVisibility() {
-        if (!performanceMonitorElement) {
-          // Guard clause
-          console.error('Performance monitor element is not defined!');
-          return;
-        }
-
-        if (fpsToggle.checked) {
-          performanceMonitorElement.style.display = 'block'; // Or however your monitor is shown
-          if (fpsStatusIndicator) fpsStatusIndicator.textContent = '표시 중'; // "Showing"
+        // stats가 초기화되었는지 확인
+        let performanceMonitorElement = null;
+        if (stats && stats.dom) {
+          if (!document.body.contains(stats.dom)) {
+            document.body.appendChild(stats.dom);
+          }
+          performanceMonitorElement = stats.dom;
         } else {
-          performanceMonitorElement.style.display = 'none'; // Or however your monitor is hidden
-          if (fpsStatusIndicator) fpsStatusIndicator.textContent = '숨김'; // "Hidden"
+          console.warn('stats is not initialized yet');
+          return; // stats가 없으면 조기 종료
+        }
+
+        function updatePerformanceMonitorVisibility() {
+          if (!performanceMonitorElement) {
+            console.warn('Performance monitor element is not available');
+            return;
+          }
+
+          if (fpsToggle && fpsToggle.checked) {
+            performanceMonitorElement.style.display = 'block';
+            if (fpsStatusIndicator) fpsStatusIndicator.textContent = '표시 중';
+          } else {
+            performanceMonitorElement.style.display = 'none';
+            if (fpsStatusIndicator) fpsStatusIndicator.textContent = '숨김';
+          }
+        }
+
+        // Add event listener to the toggle
+        if (fpsToggle) {
+          fpsToggle.addEventListener('change', updatePerformanceMonitorVisibility);
+          // Set initial state
+          updatePerformanceMonitorVisibility();
         }
       }
-
-      // Add event listener to the toggle
-      if (fpsToggle) {
-        fpsToggle.addEventListener('change', updatePerformanceMonitorVisibility);
-      }
-
-      // Set initial state when the page loads
-      // Ensure this runs after the performanceMonitorElement is defined and fpsToggle is initialized
-      // Make sure to call this after 'performanceMonitorElement' has a valid value.
-      if (fpsToggle && performanceMonitorElement) {
-        // Check if both exist
-        updatePerformanceMonitorVisibility();
-      } else {
-        if (!fpsToggle) console.error('FPS Toggle not found');
-        if (!performanceMonitorElement)
-          console.error('Performance Monitor Element not defined for initial call');
-      }
-
-      // Set initial state when the page loads
-      // Ensure this runs after the performanceMonitorElement is available and fpsToggle is initialized
-      // For example, if fpsToggle can be initially checked via HTML or other JS:
-      // updatePerformanceMonitorVisibility();
 
       // 랙 위에 화살표를 띄워 주는 헬퍼 (이미 작성하신 그대로 사용)
       function createArrowAboveRack(rack) {
