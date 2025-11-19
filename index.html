@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>파렛트 랙 시각화ddddd</title>
+    <title>파렛트 랙 시각화</title>
     <!-- Tailwind CSS CDN (예시 버전) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
@@ -455,7 +455,7 @@
           <!--추가 설정-->
         </li>
         <li
-          id="tab2"
+          id="tab4"
           class="tab flex-1 flex flex-col items-center py-2 cursor-pointer text-slate-400 hover:text-yellow-300"
         >
           <!-- 사용자 관리 아이콘 -->
@@ -1403,7 +1403,52 @@
       }
       let rackGroups = loadGroups();
       function saveGroups() {
-        localStorage.setItem('rackGroups', JSON.stringify(rackGroups));
+        try {
+          localStorage.setItem('rackGroups', JSON.stringify(rackGroups));
+        } catch (e) {
+          console.error('Failed to save groups to localStorage:', e);
+          alert('저장 공간이 부족합니다. 일부 데이터를 삭제해주세요.');
+        }
+      }
+
+      // localStorage 안전 래퍼 함수
+      function safeLocalStorageSet(key, value) {
+        try {
+          localStorage.setItem(key, value);
+          return true;
+        } catch (e) {
+          console.error(`Failed to save ${key} to localStorage:`, e);
+          alert('저장 공간이 부족합니다. 일부 데이터를 삭제해주세요.');
+          return false;
+        }
+      }
+
+      // 입력값 검증 함수 (XSS 방지)
+      function sanitizeInput(str) {
+        if (typeof str !== 'string') return '';
+        return str.replace(/[<>'"&]/g, function(char) {
+          const entities = {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+            '&': '&amp;'
+          };
+          return entities[char] || char;
+        });
+      }
+
+      // localStorage 데이터 검증 함수
+      function validateRackConfig(config) {
+        return (
+          config &&
+          typeof config.rackId === 'string' &&
+          typeof config.width === 'number' && config.width > 0 &&
+          typeof config.depth === 'number' && config.depth > 0 &&
+          typeof config.height === 'number' && config.height > 0 &&
+          typeof config.levels === 'number' && config.levels > 0 &&
+          typeof config.cells === 'number' && config.cells > 0
+        );
       }
 
       // 전역 변수 선언
@@ -1462,7 +1507,7 @@
         openGroups = Array.from(tree.querySelectorAll('details'))
           .filter((d) => d.open)
           .map((d) => d.dataset.group);
-        localStorage.setItem('openGroups', JSON.stringify(openGroups));
+        safeLocalStorageSet('openGroups', JSON.stringify(openGroups));
       }
 
       document.querySelectorAll('.floor-anchor button').forEach((btn) => {
@@ -1794,12 +1839,21 @@
         previewControls.maxDistance = 10;
 
         // 애니메이션 루프
+        let previewAnimationId = null;
         function animate() {
-          requestAnimationFrame(animate);
+          previewAnimationId = requestAnimationFrame(animate);
           previewControls.update();
           previewRenderer.render(previewScene, previewCamera);
         }
         animate();
+
+        // 미리보기 애니메이션 정리 함수
+        window.stopPreviewAnimation = function() {
+          if (previewAnimationId) {
+            cancelAnimationFrame(previewAnimationId);
+            previewAnimationId = null;
+          }
+        };
       }
 
       // 템플릿 미리보기 업데이트
@@ -1867,13 +1921,11 @@
           disposeRackResources(rackObj);
         });
 
-        // 5. racks 배열에서 삭제된 랙 제거 및 유효한 객체만 남김
+        // 5. racks 배열에서 삭제된 랙 제거 및 유효한 객체만 남김 (Set 사용으로 성능 개선)
+        const deleteSet = new Set(rackIdsToDelete);
         racks = racks.filter(
           (rack) =>
-            rack &&
-            rack.userData &&
-            rack.userData.rackId &&
-            !rackIdsToDelete.includes(rack.userData.rackId),
+            rack?.userData?.rackId && !deleteSet.has(rack.userData.rackId),
         );
 
         // 6. 선택된 랙 및 헬퍼 초기화
@@ -2022,6 +2074,7 @@
       async function init() {
         stats = new Stats();
         stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+        stats.dom.style.display = 'none'; // 초기 상태 숨김
         document.body.appendChild(stats.dom);
 
         scene = new THREE.Scene();
@@ -2256,8 +2309,9 @@
           });
         }
 
-        // 저장된 랙 로드
-        const savedConfigs = JSON.parse(localStorage.getItem('allRackConfigs')) || [];
+        // 저장된 랙 로드 (데이터 검증 포함)
+        const savedConfigs = (JSON.parse(localStorage.getItem('allRackConfigs')) || [])
+          .filter(validateRackConfig);
         for (const config of savedConfigs) {
           const rack = createRack(
             config.rackId,
@@ -2364,7 +2418,8 @@
           isDragging = false;
 
           if (editMode && selectedRacks.length > 0) {
-            // 랙 드래그 로직
+            // 랙 드래그 로직 (파렛트 선택 해제로 경쟁 조건 방지)
+            clearSelectedPallets();
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
@@ -2393,7 +2448,8 @@
               controls.enabled = false;
             }
           } else if (editMode && selectedPallets.length > 0) {
-            // 파렛트 드래그 로직
+            // 파렛트 드래그 로직 (랙 선택 해제로 경쟁 조건 방지)
+            clearSelectedRacks();
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
@@ -2681,7 +2737,7 @@
         toolbarInputs.levels.value = config.levels || 5;
         toolbarInputs.cells.value = config.cells || 4;
         toolbarInputs.rotation.value = THREE.MathUtils.radToDeg(rackObj.rotation.y) || 0;
-        if (toolbarInputs.group) toolbarInputs.group.value = cfg.group || '기본';
+        if (toolbarInputs.group) toolbarInputs.group.value = config.group || '기본';
         // 툴바 위치 조정
         updateToolbarPosition(rackObj);
       }
@@ -2818,8 +2874,9 @@
         // 초기화
         tree.innerHTML = '';
 
-        // 저장된 모든 랙 설정
-        const configs = JSON.parse(localStorage.getItem('allRackConfigs')) || [];
+        // 저장된 모든 랙 설정 (데이터 검증 포함)
+        const configs = (JSON.parse(localStorage.getItem('allRackConfigs')) || [])
+          .filter(validateRackConfig);
 
         rackGroups.forEach((groupName) => {
           // 이 그룹에 속한 랙만 필터
@@ -2879,11 +2936,12 @@
             e.preventDefault();
             details.classList.remove('bg-gray-600');
             const rackId = e.dataTransfer.getData('text/plain');
-            const all = JSON.parse(localStorage.getItem('allRackConfigs')) || [];
+            const all = (JSON.parse(localStorage.getItem('allRackConfigs')) || [])
+              .filter(validateRackConfig);
             const target = all.find((c) => c.rackId === rackId);
             if (target) {
               target.group = groupName;
-              localStorage.setItem('allRackConfigs', JSON.stringify(all));
+              safeLocalStorageSet('allRackConfigs', JSON.stringify(all));
               const rackObj = racks.find((r) => r.userData.rackId === rackId);
               if (rackObj) rackObj.userData.config.group = groupName;
               loadRackTree();
@@ -4037,7 +4095,7 @@
 
       // 왼쪽 패널의 "랙 추가" 버튼 이벤트
       document.getElementById('add-rack-left-panel').addEventListener('click', async () => {
-        const rackId = document.getElementById('rack-id').value.trim();
+        const rackId = sanitizeInput(document.getElementById('rack-id').value.trim());
         const templateId = selectedTemplateId; // 선택된 템플릿 ID 사용
         const template = rackTemplates[templateId];
         const width =
@@ -4157,6 +4215,9 @@
         sprite.position.set(x, y, z);
         sprite.scale.set(1.5, 0.75, 1);
         sprite.visible = false;
+        // Store texture reference for cleanup
+        sprite.userData.texture = texture;
+        sprite.userData.material = spriteMaterial;
         labelSprites.push(sprite);
         return sprite;
       }
@@ -4750,6 +4811,9 @@
           // 캐시된 데이터가 없으면 fetch로 파일 읽기
           if (!cachedRackData) {
             const response = await fetch('/static/data/racks.json');
+            if (!response.ok) {
+              throw new Error(`Failed to load rack data: ${response.status}`);
+            }
             cachedRackData = await response.json();
           }
           const dataList = cachedRackData;
@@ -5154,12 +5218,50 @@
         if (!rack) return;
 
         rack.traverse((child) => {
-          if (child.geometry) child.geometry.dispose();
-          if (child.material) {
-            if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose());
-            else child.material.dispose();
+          // Dispose geometry
+          if (child.geometry) {
+            child.geometry.dispose();
           }
-          if (child.dispose) child.dispose(); // Handle any custom disposal
+
+          // Dispose material and all textures
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((m) => {
+                if (m.map) m.map.dispose();
+                if (m.lightMap) m.lightMap.dispose();
+                if (m.bumpMap) m.bumpMap.dispose();
+                if (m.normalMap) m.normalMap.dispose();
+                if (m.specularMap) m.specularMap.dispose();
+                if (m.envMap) m.envMap.dispose();
+                if (m.aoMap) m.aoMap.dispose();
+                if (m.emissiveMap) m.emissiveMap.dispose();
+                m.dispose();
+              });
+            } else {
+              if (child.material.map) child.material.map.dispose();
+              if (child.material.lightMap) child.material.lightMap.dispose();
+              if (child.material.bumpMap) child.material.bumpMap.dispose();
+              if (child.material.normalMap) child.material.normalMap.dispose();
+              if (child.material.specularMap) child.material.specularMap.dispose();
+              if (child.material.envMap) child.material.envMap.dispose();
+              if (child.material.aoMap) child.material.aoMap.dispose();
+              if (child.material.emissiveMap) child.material.emissiveMap.dispose();
+              child.material.dispose();
+            }
+          }
+
+          // Dispose sprite textures stored in userData
+          if (child.userData && child.userData.texture) {
+            child.userData.texture.dispose();
+          }
+          if (child.userData && child.userData.material) {
+            child.userData.material.dispose();
+          }
+
+          // Handle any custom disposal
+          if (child.dispose && typeof child.dispose === 'function') {
+            child.dispose();
+          }
         });
 
         // Explicitly nullify references
@@ -5397,8 +5499,17 @@
         renderer.render(scene, camera);
         labelRenderer.render(scene, camera);
         stats.end();
-        requestAnimationFrame(animate);
+        mainAnimationId = requestAnimationFrame(animate);
       }
+
+      // 메인 애니메이션 정리 함수
+      let mainAnimationId = null;
+      window.stopMainAnimation = function() {
+        if (mainAnimationId) {
+          cancelAnimationFrame(mainAnimationId);
+          mainAnimationId = null;
+        }
+      };
 
       function generateUniqueId() {
         return 'uid-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
@@ -6227,9 +6338,10 @@
         document.getElementById('cfg-rotation-value'),
         document.getElementById('cfg-rotation-range'),
         (v) => {
-          // 예: updateRotation(v);
-          document.getElementById('cfg-rotation-value').value = v;
-          // … 회전 반영 로직 호출
+          // 회전 변경 시 설정 즉시 적용
+          if (typeof applyCfgPanelConfig === 'function') {
+            applyCfgPanelConfig();
+          }
         },
       );
 
