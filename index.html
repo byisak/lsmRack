@@ -84,18 +84,72 @@
         max-width: 100%;
         display: block;
       }
-      /* 툴팁 스타일 */
+      /* 툴팁 스타일 - 세련된 다크 테마 */
       .tooltip {
         position: fixed;
-        background-color: rgba(0, 0, 0, 0.8);
+        background: rgba(31, 41, 55, 0.95); /* bg-gray-800/95 */
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 14px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(75, 85, 99, 0.5); /* border-gray-600/50 */
+        font-size: 13px;
+        line-height: 1.6;
         pointer-events: none;
         z-index: 100;
         display: none;
-        max-width: 200px;
+        min-width: 180px;
+        max-width: 280px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
+                    0 0 0 1px rgba(255, 255, 255, 0.05);
+        animation: tooltipFadeIn 0.2s ease-out;
+      }
+
+      @keyframes tooltipFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .tooltip-header {
+        font-weight: 600;
+        font-size: 14px;
+        color: #60a5fa; /* blue-400 */
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+      }
+
+      .tooltip-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 4px 0;
+        font-size: 12px;
+      }
+
+      .tooltip-label {
+        color: #9ca3af; /* gray-400 */
+        font-weight: 500;
+      }
+
+      .tooltip-value {
+        color: #f3f4f6; /* gray-100 */
+        font-weight: 500;
+        text-align: right;
+      }
+
+      .tooltip-empty {
+        color: #6b7280; /* gray-500 */
+        font-style: italic;
+        text-align: center;
+        padding: 4px 0;
       }
       /* 툴박스 스타일 */
       #rack-toolbar {
@@ -4724,20 +4778,29 @@
 
       function updateTooltip(cell, x, y) {
         const cellData = cell.userData.cellData || { hasMaterial: false };
-        // cellId 표시
-        let tooltipContent = `셀 ID: ${cell.userData.cellId}<br>`;
-        // 기존 Row/Level 정보
-        tooltipContent += `셀 위치: Row ${cell.userData.cellIndex + 1}, Level ${
-          cell.userData.level + 1
-        }`;
+
+        // 세련된 툴팁 구조
+        let tooltipContent = `<div class="tooltip-header">${cell.userData.cellId || '셀 정보'}</div>`;
+
         if (cellData.hasMaterial) {
-          tooltipContent +=
-            `<br>자재: ${cellData.name || '정보 없음'}` +
-            `<br>수량: ${cellData.quantity || 0}개` +
-            `<br>상태: ${cellData.status || '정보 없음'}`;
+          tooltipContent += `
+            <div class="tooltip-row">
+              <span class="tooltip-label">자재명</span>
+              <span class="tooltip-value">${cellData.name || '정보 없음'}</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="tooltip-label">수량</span>
+              <span class="tooltip-value">${cellData.quantity || 0}개</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="tooltip-label">상태</span>
+              <span class="tooltip-value">${cellData.status || '정보 없음'}</span>
+            </div>
+          `;
         } else {
-          tooltipContent += `<br>빈 셀`;
+          tooltipContent += `<div class="tooltip-empty">빈 셀</div>`;
         }
+
         tooltip.innerHTML = tooltipContent;
         tooltip.style.left = x + 15 + 'px';
         tooltip.style.top = y + 15 + 'px';
