@@ -177,6 +177,12 @@
         position: relative;
         border-radius: 24px;
         padding: 2px;
+        background: transparent; /* 기본 상태는 투명 */
+        transition: all 0.3s ease;
+      }
+
+      /* Show gradient border on focus */
+      .search-input-container:focus-within .input-wrapper {
         background: linear-gradient(
           45deg,
           #ff6ec4,
@@ -188,13 +194,6 @@
         );
         background-size: 300% 300%;
         animation: gradientShift 3s ease infinite;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      /* Show gradient border on focus */
-      .search-input-container:focus-within .input-wrapper {
-        opacity: 1;
       }
 
       /* Show gradient shadow on focus */
