@@ -1653,6 +1653,7 @@
         CSS2DObject,
       } from '/static/js/package/examples/jsm/renderers/CSS2DRenderer.js';
       import { EdgesGeometry, LineSegments, LineBasicMaterial } from 'three';
+      import * as BufferGeometryUtils from '/static/js/package/examples/jsm/utils/BufferGeometryUtils.js';
 
       import * as THREE from 'three';
 
@@ -3929,6 +3930,18 @@
       }
 
       /**
+       * Geometry 병합 헬퍼 함수
+       * 여러 geometry를 하나로 병합하여 Draw Call 감소
+       */
+      function mergeGeometries(geometries) {
+        if (!geometries || geometries.length === 0) return null;
+        if (geometries.length === 1) return geometries[0];
+
+        // BufferGeometryUtils.mergeGeometries 사용
+        return BufferGeometryUtils.mergeGeometries(geometries, false);
+      }
+
+      /**
        * Material Pool 관리 함수
        * 템플릿별로 재질을 한 번만 생성하고 재사용하여 메모리 사용량 최적화
        */
@@ -4102,7 +4115,10 @@
         const shelfMat = materials.shelf;
         const plateMat = materials.plate;
 
-        // 기둥 생성
+        // Geometry 병합 최적화: pillar 구조물 (기둥 + 수평 바)을 하나로 병합
+        const pillarGeometries = [];
+
+        // 기둥 geometry 생성 및 배열에 추가
         const pillarGeom = new THREE.BoxGeometry(
           template.pillar.thickness,
           pillarHeight,
@@ -4115,14 +4131,12 @@
           { x: width / 2, z: -depth / 2 },
         ];
         pillars.forEach((pos) => {
-          const pillar = new THREE.Mesh(pillarGeom.clone(), pillarMat);
-          pillar.position.set(pos.x, pillarBottomY, pos.z);
-          pillar.castShadow = true;
-          pillar.receiveShadow = true;
-          rackStructureGroup.add(pillar);
+          const geom = pillarGeom.clone();
+          geom.translate(pos.x, pillarBottomY, pos.z);
+          pillarGeometries.push(geom);
         });
 
-        // 수평 바 생성
+        // 수평 바 geometry 생성 및 배열에 추가
         const usableHeight = pillarHeight - 2 * margin;
         const adjustedLevelHeight = usableHeight / levelCount;
         const horizBarGeom = new THREE.BoxGeometry(
@@ -4132,20 +4146,16 @@
         );
         for (let i = 0; i <= levelCount; i++) {
           const y = margin + i * adjustedLevelHeight;
-          const leftBar = new THREE.Mesh(horizBarGeom.clone(), pillarMat);
-          leftBar.position.set(-width / 2, y, 0);
-          leftBar.castShadow = true;
-          leftBar.receiveShadow = true;
-          rackStructureGroup.add(leftBar);
+          const leftBarGeom = horizBarGeom.clone();
+          leftBarGeom.translate(-width / 2, y, 0);
+          pillarGeometries.push(leftBarGeom);
 
-          const rightBar = new THREE.Mesh(horizBarGeom.clone(), pillarMat);
-          rightBar.position.set(width / 2, y, 0);
-          rightBar.castShadow = true;
-          rightBar.receiveShadow = true;
-          rackStructureGroup.add(rightBar);
+          const rightBarGeom = horizBarGeom.clone();
+          rightBarGeom.translate(width / 2, y, 0);
+          pillarGeometries.push(rightBarGeom);
         }
 
-        // 대각선 보강재
+        // 대각선 보강재도 배열에 추가 (회전 적용 필요)
         if (template.supports.enabled && template.supports.diagonal) {
           for (let i = 0; i < levelCount; i++) {
             const bottomY = margin + i * adjustedLevelHeight;
@@ -4158,65 +4168,72 @@
               template.pillar.thickness,
             );
             const angle = Math.atan2(adjustedLevelHeight, depth);
+            const rotationX = i % 2 === 0 ? -(Math.PI / 2 - angle) : Math.PI / 2 - angle;
 
-            const leftDiag = new THREE.Mesh(diagGeom.clone(), pillarMat);
-            leftDiag.position.set(-width / 2, centerY, 0);
-            leftDiag.rotation.x = i % 2 === 0 ? -(Math.PI / 2 - angle) : Math.PI / 2 - angle;
-            leftDiag.castShadow = true;
-            leftDiag.receiveShadow = true;
-            rackStructureGroup.add(leftDiag);
+            // 왼쪽 대각선
+            const leftDiagGeom = diagGeom.clone();
+            leftDiagGeom.rotateX(rotationX);
+            leftDiagGeom.translate(-width / 2, centerY, 0);
+            pillarGeometries.push(leftDiagGeom);
 
-            const rightDiag = new THREE.Mesh(diagGeom.clone(), pillarMat);
-            rightDiag.position.set(width / 2, centerY, 0);
-            rightDiag.rotation.x = i % 2 === 0 ? -(Math.PI / 2 - angle) : Math.PI / 2 - angle;
-            rightDiag.castShadow = true;
-            rightDiag.receiveShadow = true;
-            rackStructureGroup.add(rightDiag);
+            // 오른쪽 대각선
+            const rightDiagGeom = diagGeom.clone();
+            rightDiagGeom.rotateX(rotationX);
+            rightDiagGeom.translate(width / 2, centerY, 0);
+            pillarGeometries.push(rightDiagGeom);
           }
         }
 
-        // 선반 생성 및 선반 위 판 추가
+        // Pillar 구조물 병합 및 mesh 생성
+        const mergedPillarGeometry = mergeGeometries(pillarGeometries);
+        const pillarStructureMesh = new THREE.Mesh(mergedPillarGeometry, pillarMat);
+        // Shadow 최적화: 병합된 pillar 구조물은 그림자 드리움
+        pillarStructureMesh.castShadow = true;
+        pillarStructureMesh.receiveShadow = false;
+        rackStructureGroup.add(pillarStructureMesh);
+
+        // Geometry 병합 최적화: 선반 구조물과 판을 각각 병합
+        const shelfGeometries = [];
+        const plateGeometries = [];
+
         for (let i = 0; i < levelCount; i++) {
           const y = i * levelHeight;
+
+          // 선반 프레임 앞
           const frameGeomFront = new THREE.BoxGeometry(
             width - template.shelf.thickness,
             template.shelf.thickness,
             template.shelf.thickness,
           );
-          const frameFront = new THREE.Mesh(frameGeomFront, shelfMat);
-          frameFront.position.set(0, y + 0.3, depth / 2 - template.shelf.thickness);
-          frameFront.castShadow = true;
-          frameFront.receiveShadow = true;
-          rackStructureGroup.add(frameFront);
+          const frontGeom = frameGeomFront.clone();
+          frontGeom.translate(0, y + 0.3, depth / 2 - template.shelf.thickness);
+          shelfGeometries.push(frontGeom);
 
+          // 선반 프레임 뒤
           const frameGeomBack = new THREE.BoxGeometry(
             width - template.shelf.thickness,
             template.shelf.thickness,
             template.shelf.thickness,
           );
-          const frameBack = new THREE.Mesh(frameGeomBack, shelfMat);
-          frameBack.position.set(0, y + 0.3, -depth / 2 + template.shelf.thickness);
-          frameBack.castShadow = true;
-          frameBack.receiveShadow = true;
-          rackStructureGroup.add(frameBack);
+          const backGeom = frameGeomBack.clone();
+          backGeom.translate(0, y + 0.3, -depth / 2 + template.shelf.thickness);
+          shelfGeometries.push(backGeom);
 
+          // 선반 프레임 좌우
           const frameGeomSide = new THREE.BoxGeometry(
             template.shelf.thickness,
             template.shelf.thickness,
             depth - template.shelf.thickness,
           );
-          const frameLeft = new THREE.Mesh(frameGeomSide, shelfMat);
-          frameLeft.position.set(-width / 2 + template.shelf.thickness, y + 0.3, 0);
-          frameLeft.castShadow = true;
-          frameLeft.receiveShadow = true;
-          rackStructureGroup.add(frameLeft);
+          const leftGeom = frameGeomSide.clone();
+          leftGeom.translate(-width / 2 + template.shelf.thickness, y + 0.3, 0);
+          shelfGeometries.push(leftGeom);
 
-          const frameRight = new THREE.Mesh(frameGeomSide, shelfMat);
-          frameRight.position.set(width / 2 - template.shelf.thickness, y + 0.3, 0);
-          frameRight.castShadow = true;
-          frameRight.receiveShadow = true;
-          rackStructureGroup.add(frameRight);
+          const rightGeom = frameGeomSide.clone();
+          rightGeom.translate(width / 2 - template.shelf.thickness, y + 0.3, 0);
+          shelfGeometries.push(rightGeom);
 
+          // 서포트
           if (template.supports.enabled) {
             for (let j = 1; j < 5; j++) {
               const supportGeom = new THREE.BoxGeometry(
@@ -4224,37 +4241,51 @@
                 0.08,
                 depth - template.shelf.thickness,
               );
-              const support = new THREE.Mesh(supportGeom, shelfMat);
-              support.position.set(-width / 2 + (width / 5) * j, y + 0.3, 0);
-              support.castShadow = true;
-              support.receiveShadow = true;
-              rackStructureGroup.add(support);
+              const suppGeom = supportGeom.clone();
+              suppGeom.translate(-width / 2 + (width / 5) * j, y + 0.3, 0);
+              shelfGeometries.push(suppGeom);
             }
           }
 
-          // 선반 위에 판 추가 (shelfPlate가 true일 경우)
+          // 선반 위 판
           if (template.shelfPlate) {
             const plateGeom = new THREE.BoxGeometry(
               width - template.shelf.thickness * 2,
               plateThickness,
               depth - template.shelf.thickness * 2,
             );
-            const plate = new THREE.Mesh(plateGeom, plateMat);
-            plate.position.set(0, y + 0.3 + template.shelf.thickness / 2 + plateThickness / 2, 0);
-            plate.castShadow = true;
-            plate.receiveShadow = true;
-            rackStructureGroup.add(plate);
+            const plGeom = plateGeom.clone();
+            plGeom.translate(0, y + 0.3 + template.shelf.thickness / 2 + plateThickness / 2, 0);
+            plateGeometries.push(plGeom);
           }
         }
 
-        // 랙 상단에 판 추가 (topPlate가 true일 경우)
+        // 랙 상단 판 추가
         if (template.topPlate) {
           const topPlateGeom = new THREE.BoxGeometry(width, plateThickness, depth);
-          const topPlate = new THREE.Mesh(topPlateGeom, plateMat);
-          topPlate.position.set(0, pillarHeight - plateThickness / 2, 0);
-          topPlate.castShadow = true;
-          topPlate.receiveShadow = true;
-          rackStructureGroup.add(topPlate);
+          const topGeom = topPlateGeom.clone();
+          topGeom.translate(0, pillarHeight - plateThickness / 2, 0);
+          plateGeometries.push(topGeom);
+        }
+
+        // Shelf 구조물 병합 및 mesh 생성
+        if (shelfGeometries.length > 0) {
+          const mergedShelfGeometry = mergeGeometries(shelfGeometries);
+          const shelfStructureMesh = new THREE.Mesh(mergedShelfGeometry, shelfMat);
+          // Shadow 최적화: 선반 구조물은 그림자 끔
+          shelfStructureMesh.castShadow = false;
+          shelfStructureMesh.receiveShadow = false;
+          rackStructureGroup.add(shelfStructureMesh);
+        }
+
+        // Plate 병합 및 mesh 생성
+        if (plateGeometries.length > 0) {
+          const mergedPlateGeometry = mergeGeometries(plateGeometries);
+          const plateStructureMesh = new THREE.Mesh(mergedPlateGeometry, plateMat);
+          // Shadow 최적화: 판은 그림자 받기만 (받는 표면)
+          plateStructureMesh.castShadow = false;
+          plateStructureMesh.receiveShadow = true;
+          rackStructureGroup.add(plateStructureMesh);
         }
 
         // 셀 생성
@@ -4268,15 +4299,14 @@
           rackGroup.userData.cells,
         );
 
-        // 기존 랙 생성 로직 끝 부분에 있는 traverse 콜백을 아래처럼 수정하세요.
+        // BoundingBox 계산 및 Shadow 최적화
         rackGroup.traverse((child) => {
           if (child.isMesh) {
-            // 기존에 있던 BoundingBox 계산
+            // BoundingBox 계산
             if (child.geometry) child.geometry.computeBoundingBox();
 
-            // 모든 Mesh에 그림자 권한 부여
-            child.castShadow = true;
-            child.receiveShadow = true;
+            // Shadow 최적화: 개별 부품에서 이미 설정했으므로 여기서는 설정하지 않음
+            // 기둥만 castShadow = true, 판은 receiveShadow = true로 이미 설정됨
           }
         });
 
