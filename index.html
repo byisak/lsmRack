@@ -1592,7 +1592,7 @@
         </div>
 
         <div class="flex items-start justify-between">
-          <label class="text-sm text-gray-400 min-w-[80px]">자재 ID</label>
+          <label class="text-sm text-gray-400 min-w-[80px]">품목코드</label>
           <span id="cell-info-materialId" class="text-sm text-white font-medium text-right flex-1"></span>
         </div>
 
@@ -4784,6 +4784,10 @@
 
         if (cellData.hasMaterial) {
           tooltipContent += `
+            <div class="tooltip-row">
+              <span class="tooltip-label">품목코드</span>
+              <span class="tooltip-value">${cellData.materialId || '정보 없음'}</span>
+            </div>
             <div class="tooltip-row">
               <span class="tooltip-label">자재명</span>
               <span class="tooltip-value">${cellData.name || '정보 없음'}</span>
