@@ -1579,6 +1579,12 @@
 
       // 3) 바닥 생성/업데이트 함수 수정
       function applyFloorSettings() {
+        // Guard: floorMesh가 초기화되지 않았으면 리턴
+        if (!floorMesh || !floorMesh.geometry) {
+          console.warn('floorMesh is not initialized yet');
+          return;
+        }
+
         // 1) 새 크기 읽기
         const newW = parseFloat(document.getElementById('cfg-floor-width').value) || 100;
         const newD = parseFloat(document.getElementById('cfg-floor-depth').value) || 100;
@@ -6194,8 +6200,16 @@
       // Or, if your monitor element has a specific ID, use:
       // const performanceMonitorElement = document.getElementById('your-monitor-id');
 
-      document.body.appendChild(stats.dom); // Example: Appending stats.js panel to the body
-      const performanceMonitorElement = stats.dom; // Assign the DOM element
+      // Guard: stats가 초기화되었는지 확인
+      let performanceMonitorElement = null;
+      if (stats && stats.dom) {
+        if (!document.body.contains(stats.dom)) {
+          document.body.appendChild(stats.dom);
+        }
+        performanceMonitorElement = stats.dom; // Assign the DOM element
+      } else {
+        console.warn('stats is not initialized yet');
+      }
       // --- END CRUCIAL PART ---
 
       function updatePerformanceMonitorVisibility() {
