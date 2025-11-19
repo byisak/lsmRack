@@ -1985,6 +1985,12 @@
       let labelsVisible = !isEditMode;
       let labelSprites = [];
 
+      // Material Pool - 템플릿별 재질 재사용
+      const materialPools = {
+        rack: new Map(), // 랙 구조물 재질 (템플릿별)
+        cell: null // 셀 관련 재질 (전역 공유)
+      };
+
       // 전역 자재 데이터 (예시)
       let rackData = { cells: [] };
 
@@ -3922,6 +3928,100 @@
         if (spotLight) spotLight.intensity = norm * 2.0;
       }
 
+      /**
+       * Material Pool 관리 함수
+       * 템플릿별로 재질을 한 번만 생성하고 재사용하여 메모리 사용량 최적화
+       */
+      function getMaterialsForTemplate(template, templateId = 'default') {
+        // 캐시 키 생성 (색상 값으로 고유 키 생성)
+        const cacheKey = `${templateId}-${template.pillar.color}-${template.shelf.color}`;
+
+        // 이미 생성된 재질이 있으면 반환
+        if (materialPools.rack.has(cacheKey)) {
+          return materialPools.rack.get(cacheKey);
+        }
+
+        // 새로운 재질 세트 생성
+        const materials = {
+          pillar: new THREE.MeshStandardMaterial({
+            color: template.pillar.color,
+            metalness: template.pillar.metalness,
+            roughness: template.pillar.roughness,
+          }),
+          shelf: new THREE.MeshStandardMaterial({
+            color: template.shelf.color,
+            metalness: template.shelf.metalness,
+            roughness: template.shelf.roughness,
+          }),
+          plate: new THREE.MeshStandardMaterial({
+            color: template.shelf.color,
+            metalness: 0.1,
+            roughness: 0.7,
+          })
+        };
+
+        // 캐시에 저장
+        materialPools.rack.set(cacheKey, materials);
+        return materials;
+      }
+
+      /**
+       * 셀 재질 가져오기 (전역 공유)
+       */
+      function getCellMaterials() {
+        // 이미 생성되어 있으면 반환
+        if (materialPools.cell) {
+          return materialPools.cell;
+        }
+
+        // 셀 관련 재질 한 번만 생성
+        materialPools.cell = {
+          transparent: new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0.0,
+            depthWrite: false,
+          }),
+          highlightFull: new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.3,
+          }),
+          highlightEmpty: new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.3,
+          }),
+          highlightGood: new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.3,
+          }),
+          highlightWarning: new THREE.MeshBasicMaterial({
+            color: 0xffaa00,
+            transparent: true,
+            opacity: 0.3,
+          }),
+          hoverFull: new THREE.MeshBasicMaterial({
+            color: 0x00aaff,
+            transparent: true,
+            opacity: 0.5,
+          }),
+          hoverEmpty: new THREE.MeshBasicMaterial({
+            color: 0xffaa00,
+            transparent: true,
+            opacity: 0.5,
+          }),
+          standard: [
+            new THREE.MeshStandardMaterial({ color: 0xaa3333, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0x3333aa, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0x33aa33, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0xaaaa33, metalness: 0.2, roughness: 0.8 }),
+          ]
+        };
+
+        return materialPools.cell;
+      }
+
       // 랙을 생성하는 함수. Three.js를 사용해 3D 랙 구조를 생성하고 셀을 추가함
       // rackId: 랙의 고유 ID
       // width, depth, height: 랙의 너비, 깊이, 높이
@@ -3996,22 +4096,11 @@
         // 판 두께 설정
         const plateThickness = template.plateThickness || 0.05;
 
-        // 재료 정의
-        const pillarMat = new THREE.MeshStandardMaterial({
-          color: template.pillar.color,
-          metalness: template.pillar.metalness,
-          roughness: template.pillar.roughness,
-        });
-        const shelfMat = new THREE.MeshStandardMaterial({
-          color: template.shelf.color,
-          metalness: template.shelf.metalness,
-          roughness: template.shelf.roughness,
-        });
-        const plateMat = new THREE.MeshStandardMaterial({
-          color: template.shelf.color,
-          metalness: 0.1,
-          roughness: 0.7,
-        });
+        // 재료 정의 - Material Pool에서 가져오기 (메모리 최적화)
+        const materials = getMaterialsForTemplate(template, templateId);
+        const pillarMat = materials.pillar;
+        const shelfMat = materials.shelf;
+        const plateMat = materials.plate;
 
         // 기둥 생성
         const pillarGeom = new THREE.BoxGeometry(
@@ -4259,48 +4348,16 @@
         const colWidth = width / cellsPerLevel;
         const cellHeight = 0.9;
 
-        // 재질 정의
-        const transparentMaterial = new THREE.MeshBasicMaterial({
-          transparent: true,
-          opacity: 0.0,
-          depthWrite: false,
-        });
-        const highlightMaterialFull = new THREE.MeshBasicMaterial({
-          color: 0x00ff00,
-          transparent: true,
-          opacity: 0.3,
-        });
-        const highlightMaterialEmpty = new THREE.MeshBasicMaterial({
-          color: 0xff0000,
-          transparent: true,
-          opacity: 0.3,
-        });
-        const highlightMaterialGood = new THREE.MeshBasicMaterial({
-          color: 0x00ff00,
-          transparent: true,
-          opacity: 0.3,
-        });
-        const highlightMaterialWarning = new THREE.MeshBasicMaterial({
-          color: 0xffaa00,
-          transparent: true,
-          opacity: 0.3,
-        });
-        const hoverMaterialFull = new THREE.MeshBasicMaterial({
-          color: 0x00aaff,
-          transparent: true,
-          opacity: 0.5,
-        });
-        const hoverMaterialEmpty = new THREE.MeshBasicMaterial({
-          color: 0xffaa00,
-          transparent: true,
-          opacity: 0.5,
-        });
-        const standardMaterials = [
-          new THREE.MeshStandardMaterial({ color: 0xaa3333, metalness: 0.2, roughness: 0.8 }),
-          new THREE.MeshStandardMaterial({ color: 0x3333aa, metalness: 0.2, roughness: 0.8 }),
-          new THREE.MeshStandardMaterial({ color: 0x33aa33, metalness: 0.2, roughness: 0.8 }),
-          new THREE.MeshStandardMaterial({ color: 0xaaaa33, metalness: 0.2, roughness: 0.8 }),
-        ];
+        // 재질 정의 - Material Pool에서 가져오기 (메모리 최적화)
+        const cellMats = getCellMaterials();
+        const transparentMaterial = cellMats.transparent;
+        const highlightMaterialFull = cellMats.highlightFull;
+        const highlightMaterialEmpty = cellMats.highlightEmpty;
+        const highlightMaterialGood = cellMats.highlightGood;
+        const highlightMaterialWarning = cellMats.highlightWarning;
+        const hoverMaterialFull = cellMats.hoverFull;
+        const hoverMaterialEmpty = cellMats.hoverEmpty;
+        const standardMaterials = cellMats.standard;
         const boxGeometry = new THREE.BoxGeometry(colWidth * 0.8, 0.7, depth * 0.8);
 
         // 셀 데이터 크기 조정
@@ -4351,17 +4408,18 @@
               labelSprites.push(sprite);
             }
 
+            // Material Pool의 재질을 직접 참조 (clone 불필요, 메모리 최적화)
             cellMesh.userData.highlightMaterial = cellMesh.userData.cellData.hasMaterial
-              ? highlightMaterialFull.clone()
-              : highlightMaterialEmpty.clone();
+              ? highlightMaterialFull
+              : highlightMaterialEmpty;
             cellMesh.userData.hoverMaterial = cellMesh.userData.cellData.hasMaterial
-              ? hoverMaterialFull.clone()
-              : hoverMaterialEmpty.clone();
+              ? hoverMaterialFull
+              : hoverMaterialEmpty;
             cellMesh.userData.statusMaterial =
               cellMesh.userData.cellData.hasMaterial &&
               cellMesh.userData.cellData.status === '점검 필요'
-                ? highlightMaterialWarning.clone()
-                : highlightMaterialGood.clone();
+                ? highlightMaterialWarning
+                : highlightMaterialGood;
 
             cellContainer.add(cellMesh);
             cellMeshes.push(cellMesh);
