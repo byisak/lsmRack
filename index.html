@@ -6202,6 +6202,7 @@
           const pos = oldRack.position.clone();
           const rotation = oldRack.rotation.y;
           const config = oldRack.userData.config;
+          const preservedCells = oldRack.userData.cells;  // 셀 데이터 보존
           const preservedCellAddresses = oldRack.userData.cells.map((row, rowIdx) =>
             row.map((cell, colIdx) => `${rackId}-${String.fromCharCode(65 + rowIdx)}${colIdx + 1}`),
           );
@@ -6216,10 +6217,13 @@
             config.height,
             config.levels,
             config.cells,
-            pos,
-            true,
+            preservedCells,  // 셀 데이터 전달
+            true,            // isNewRack
             templateId,
           );
+
+          // 위치와 회전 복원
+          newRack.position.copy(pos);
           newRack.rotation.y = rotation;
           newRack.userData.config.rotation = THREE.MathUtils.radToDeg(rotation);
           newRack.updateMatrixWorld(true);
