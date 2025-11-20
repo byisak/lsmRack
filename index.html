@@ -2402,7 +2402,7 @@
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.0;
 
-        renderer.shadowMap.enabled = true; //랙의 그림자가 바닥에 비치게
+        renderer.shadowMap.enabled = false; //초기에는 그림자 비활성화
         renderer.shadowMap.type = THREE.PCFSoftShadowMap; //그림자 바닥 퀄리티 조정
         //renderer.shadowMap.type = THREE.BasicShadowMap;
         renderer.outputEncoding = THREE.sRGBEncoding;
@@ -2461,13 +2461,29 @@
           // 3) 씬의 모든 메시(mesh)에 대해 cast/receiveShadow 설정
           scene.traverse((obj) => {
             if (obj.isMesh) {
-              obj.castShadow = enabled;
-              obj.receiveShadow = enabled;
+              // 각 메시의 역할에 따라 적절하게 그림자 설정
+              if (obj.name === 'pillarStructure') {
+                obj.castShadow = enabled;
+                obj.receiveShadow = false;
+              } else if (obj.name === 'plateStructure') {
+                obj.castShadow = false;
+                obj.receiveShadow = enabled;
+              } else if (obj.name === 'shelfStructure') {
+                obj.castShadow = false;
+                obj.receiveShadow = false;
+              } else if (obj === floorMesh) {
+                obj.castShadow = false;
+                obj.receiveShadow = enabled;
+              } else {
+                // 기타 메시(파렛트 등)
+                obj.castShadow = enabled;
+                obj.receiveShadow = enabled;
+              }
             }
           });
         });
 
-        shadowToggle.checked = true; // 기본 on 으로 시작하고 싶다면
+        shadowToggle.checked = false; // 초기에는 그림자 비활성화
         shadowToggle.dispatchEvent(new Event('change'));
 
         // 기본 바닥 템플릿이 없으면 생성
@@ -3818,8 +3834,8 @@
 
         const floor = new THREE.Mesh(geometry, material);
         floor.position.y = thickness / 2; // 바닥의 중심을 기준으로 Y 위치 조정 (Y 위치는 항상 0 기준)
-        floor.receiveShadow = true;
-        floor.castShadow = true; // 바닥이 그림자를 생성하도록 설정
+        floor.receiveShadow = renderer.shadowMap.enabled;
+        floor.castShadow = false; // 바닥은 그림자를 드리우지 않음
         scene.add(floor);
 
         // 편집 모드일 경우 격자 추가
@@ -4187,8 +4203,9 @@
         // Pillar 구조물 병합 및 mesh 생성
         const mergedPillarGeometry = mergeGeometries(pillarGeometries);
         const pillarStructureMesh = new THREE.Mesh(mergedPillarGeometry, pillarMat);
+        pillarStructureMesh.name = 'pillarStructure'; // 그림자 설정을 위한 이름 지정
         // Shadow 최적화: 병합된 pillar 구조물은 그림자 드리움
-        pillarStructureMesh.castShadow = true;
+        pillarStructureMesh.castShadow = renderer.shadowMap.enabled;
         pillarStructureMesh.receiveShadow = false;
         rackStructureGroup.add(pillarStructureMesh);
 
@@ -4272,6 +4289,7 @@
         if (shelfGeometries.length > 0) {
           const mergedShelfGeometry = mergeGeometries(shelfGeometries);
           const shelfStructureMesh = new THREE.Mesh(mergedShelfGeometry, shelfMat);
+          shelfStructureMesh.name = 'shelfStructure'; // 그림자 설정을 위한 이름 지정
           // Shadow 최적화: 선반 구조물은 그림자 끔
           shelfStructureMesh.castShadow = false;
           shelfStructureMesh.receiveShadow = false;
@@ -4282,9 +4300,10 @@
         if (plateGeometries.length > 0) {
           const mergedPlateGeometry = mergeGeometries(plateGeometries);
           const plateStructureMesh = new THREE.Mesh(mergedPlateGeometry, plateMat);
+          plateStructureMesh.name = 'plateStructure'; // 그림자 설정을 위한 이름 지정
           // Shadow 최적화: 판은 그림자 받기만 (받는 표면)
           plateStructureMesh.castShadow = false;
-          plateStructureMesh.receiveShadow = true;
+          plateStructureMesh.receiveShadow = renderer.shadowMap.enabled;
           rackStructureGroup.add(plateStructureMesh);
         }
 
@@ -4347,9 +4366,9 @@
         // (랙 바닥이 0에 맞춰지므로, 파렛트 두께의 절반만큼)
         palletMesh.position.set(0, palletHeight / 2, 0);
 
-        // 그림자 옵션
-        palletMesh.castShadow = true;
-        palletMesh.receiveShadow = true;
+        // 그림자 옵션 (renderer 상태에 따라 설정)
+        palletMesh.castShadow = renderer.shadowMap.enabled;
+        palletMesh.receiveShadow = renderer.shadowMap.enabled;
 
         return palletMesh;
       }
