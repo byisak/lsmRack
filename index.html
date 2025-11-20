@@ -6873,20 +6873,7 @@
         .addEventListener('click', saveTemplateChanges);
       document.getElementById('add-new-template').addEventListener('click', addNewTemplate);
 
-      // 디바운스 함수 (성능 최적화)
-      function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-          const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-          };
-          clearTimeout(timeout);
-          timeout = setTimeout(later, wait);
-        };
-      }
-
-      // 템플릿 편집 모달 입력 필드에 디바운스된 미리보기 업데이트 추가
+      // 템플릿 편집 모달 입력 필드에 디바운스된 미리보기 업데이트 추가 (기존 debounce 함수 재사용)
       const debouncedUpdatePreview = debounce(updatePreviewRack, 300); // 300ms 디바운스
 
       // 컬러피커와 다른 입력 필드에 이벤트 리스너 추가
