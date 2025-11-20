@@ -2039,20 +2039,6 @@
           };
         }
 
-        // yellowPallet 템플릿이 없는 경우 추가
-        if (!rackTemplates.hasOwnProperty('yellowPallet')) {
-          rackTemplates['yellowPallet'] = {
-            name: '노란 파렛트 템플릿',
-            pillar: { color: 0x001cff, metalness: 0.4, roughness: 0.4, thickness: 0.1 },
-            shelf: { color: 0xffe300, metalness: 0.2, roughness: 0.6, thickness: 0.1 },
-            supports: { enabled: true, diagonal: true },
-            shelfPlate: false,
-            topPlate: false,
-            // dimensions: { width: 5, depth: 1.5, height: 5, levels: 5, cells: 4 },
-            includePallet: true,
-          };
-        }
-
         // 변경된 템플릿을 로컬스토리지에 다시 저장
         localStorage.setItem('rackTemplates', JSON.stringify(rackTemplates));
       }
@@ -6049,12 +6035,17 @@
 
         const modal = document.getElementById('template-edit-modal');
         document.getElementById('edit-template-name').value = template.name;
-        document.getElementById('edit-pillar-color').value = `#${template.pillar.color
-          .toString(16)
-          .padStart(6, '0')}`;
-        document.getElementById('edit-shelf-color').value = `#${template.shelf.color
-          .toString(16)
-          .padStart(6, '0')}`;
+
+        // 색상 처리: 숫자(0xff0000) 또는 문자열("#ff0000") 모두 처리
+        const pillarColor = typeof template.pillar.color === 'number'
+          ? template.pillar.color
+          : parseInt(template.pillar.color.replace('#', ''), 16);
+        const shelfColor = typeof template.shelf.color === 'number'
+          ? template.shelf.color
+          : parseInt(template.shelf.color.replace('#', ''), 16);
+
+        document.getElementById('edit-pillar-color').value = `#${pillarColor.toString(16).padStart(6, '0')}`;
+        document.getElementById('edit-shelf-color').value = `#${shelfColor.toString(16).padStart(6, '0')}`;
         document.getElementById('edit-pillar-thickness').value = template.pillar.thickness;
         document.getElementById('edit-shelf-thickness').value = template.shelf.thickness;
         document.getElementById('edit-diagonal-supports').checked = template.supports.diagonal;
@@ -6095,6 +6086,11 @@
 
         const pillarColorHex = document.getElementById('edit-pillar-color').value; // "#rrggbb"
         const shelfColorHex = document.getElementById('edit-shelf-color').value; // "#rrggbb"
+
+        // Hex 문자열을 숫자로 변환 (일관성 유지)
+        const pillarColor = parseInt(pillarColorHex.replace('#', ''), 16);
+        const shelfColor = parseInt(shelfColorHex.replace('#', ''), 16);
+
         const pillarThickness =
           parseFloat(document.getElementById('edit-pillar-thickness').value) || 0.1;
         const shelfThickness =
@@ -6107,13 +6103,13 @@
         rackTemplates[templateId] = {
           name,
           pillar: {
-            color: pillarColorHex,
+            color: pillarColor, // 숫자로 저장
             metalness: 0.4,
             roughness: 0.4,
             thickness: Math.max(0.05, Math.min(0.5, pillarThickness)),
           },
           shelf: {
-            color: shelfColorHex,
+            color: shelfColor, // 숫자로 저장
             metalness: 0.2,
             roughness: 0.6,
             thickness: Math.max(0.05, Math.min(0.5, shelfThickness)),
@@ -6147,8 +6143,13 @@
           return;
         }
 
-        const pillarColorHex = document.getElementById('edit-pillar-color').value;
-        const shelfColorHex = document.getElementById('edit-shelf-color').value;
+        const pillarColorHex = document.getElementById('edit-pillar-color').value; // "#rrggbb"
+        const shelfColorHex = document.getElementById('edit-shelf-color').value; // "#rrggbb"
+
+        // Hex 문자열을 숫자로 변환 (일관성 유지)
+        const pillarColor = parseInt(pillarColorHex.replace('#', ''), 16);
+        const shelfColor = parseInt(shelfColorHex.replace('#', ''), 16);
+
         const pillarThickness =
           parseFloat(document.getElementById('edit-pillar-thickness').value) || 0.1;
         const shelfThickness =
@@ -6162,12 +6163,12 @@
           name,
           pillar: {
             ...rackTemplates[templateId].pillar,
-            color: pillarColorHex,
+            color: pillarColor, // 숫자로 저장
             thickness: Math.max(0.05, Math.min(0.5, pillarThickness)),
           },
           shelf: {
             ...rackTemplates[templateId].shelf,
-            color: shelfColorHex,
+            color: shelfColor, // 숫자로 저장
             thickness: Math.max(0.05, Math.min(0.5, shelfThickness)),
           },
           supports: { ...rackTemplates[templateId].supports, diagonal: diagonalSupports },
