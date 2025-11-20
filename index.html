@@ -4187,9 +4187,9 @@
         // Pillar 구조물 병합 및 mesh 생성
         const mergedPillarGeometry = mergeGeometries(pillarGeometries);
         const pillarStructureMesh = new THREE.Mesh(mergedPillarGeometry, pillarMat);
-        // Shadow 최적화: 병합된 pillar 구조물은 그림자 드리움
+        // 모든 구조물이 바닥에 그림자를 드리움
         pillarStructureMesh.castShadow = true;
-        pillarStructureMesh.receiveShadow = false;
+        pillarStructureMesh.receiveShadow = true;
         rackStructureGroup.add(pillarStructureMesh);
 
         // Geometry 병합 최적화: 선반 구조물과 판을 각각 병합
@@ -4272,9 +4272,9 @@
         if (shelfGeometries.length > 0) {
           const mergedShelfGeometry = mergeGeometries(shelfGeometries);
           const shelfStructureMesh = new THREE.Mesh(mergedShelfGeometry, shelfMat);
-          // Shadow 최적화: 선반 구조물은 그림자 끔
-          shelfStructureMesh.castShadow = false;
-          shelfStructureMesh.receiveShadow = false;
+          // 모든 구조물이 바닥에 그림자를 드리움
+          shelfStructureMesh.castShadow = true;
+          shelfStructureMesh.receiveShadow = true;
           rackStructureGroup.add(shelfStructureMesh);
         }
 
@@ -4282,8 +4282,8 @@
         if (plateGeometries.length > 0) {
           const mergedPlateGeometry = mergeGeometries(plateGeometries);
           const plateStructureMesh = new THREE.Mesh(mergedPlateGeometry, plateMat);
-          // Shadow 최적화: 판은 그림자 받기만 (받는 표면)
-          plateStructureMesh.castShadow = false;
+          // 모든 구조물이 바닥에 그림자를 드리움 + 판은 그림자도 받음
+          plateStructureMesh.castShadow = true;
           plateStructureMesh.receiveShadow = true;
           rackStructureGroup.add(plateStructureMesh);
         }
