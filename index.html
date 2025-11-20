@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>파렛트 랙 시각화ddddd</title>
+    <title>파렛트 랙 시각화</title>
     <!-- Tailwind CSS CDN (예시 버전) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
@@ -84,18 +84,71 @@
         max-width: 100%;
         display: block;
       }
-      /* 툴팁 스타일 */
+      /* 툴팁 스타일 - 세련된 다크 테마 */
       .tooltip {
         position: fixed;
-        background-color: rgba(0, 0, 0, 0.8);
+        background: rgba(31, 41, 55, 0.95); /* bg-gray-800/95 */
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 14px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(75, 85, 99, 0.5); /* border-gray-600/50 */
+        font-size: 13px;
+        line-height: 1.6;
         pointer-events: none;
         z-index: 100;
         display: none;
-        max-width: 200px;
+        min-width: 180px;
+        max-width: 280px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        animation: tooltipFadeIn 0.2s ease-out;
+      }
+
+      @keyframes tooltipFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .tooltip-header {
+        font-weight: 600;
+        font-size: 14px;
+        color: #60a5fa; /* blue-400 */
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+      }
+
+      .tooltip-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 4px 0;
+        font-size: 12px;
+      }
+
+      .tooltip-label {
+        color: #9ca3af; /* gray-400 */
+        font-weight: 500;
+      }
+
+      .tooltip-value {
+        color: #f3f4f6; /* gray-100 */
+        font-weight: 500;
+        text-align: right;
+      }
+
+      .tooltip-empty {
+        color: #6b7280; /* gray-500 */
+        font-style: italic;
+        text-align: center;
+        padding: 4px 0;
       }
       /* 툴박스 스타일 */
       #rack-toolbar {
@@ -140,6 +193,149 @@
         -moz-appearance: textfield;
         appearance: textfield;
       }
+
+      /* ===== 그라디언트 검색 인풋 스타일 ===== */
+      .search-input-container {
+        position: relative;
+        width: 400px;
+      }
+
+      /* Gradient shadow effect */
+      .gradient-shadow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 24px;
+        background: linear-gradient(45deg, #ff6ec4, #7873f5, #4fc3f7, #66bb6a, #ffca28, #ff6ec4);
+        background-size: 300% 300%;
+        opacity: 0;
+        filter: blur(20px);
+        transition: opacity 0.3s ease;
+        animation: gradientShift 3s ease infinite;
+        z-index: 0;
+      }
+
+      /* Gradient border wrapper */
+      .input-wrapper {
+        position: relative;
+        border-radius: 24px;
+        padding: 2px;
+        background: transparent; /* 기본 상태는 투명 */
+        transition: all 0.3s ease;
+      }
+
+      /* Show gradient border on focus */
+      .search-input-container:focus-within .input-wrapper {
+        background: linear-gradient(45deg, #ff6ec4, #7873f5, #4fc3f7, #66bb6a, #ffca28, #ff6ec4);
+        background-size: 300% 300%;
+        animation: gradientShift 3s ease infinite;
+      }
+
+      /* Show gradient shadow on focus */
+      .search-input-container:focus-within .gradient-shadow {
+        opacity: 0.4;
+      }
+
+      /* Search input field */
+      #search-input {
+        width: 100%;
+        padding: 14px 50px 14px 24px;
+        font-size: 15px;
+        border: none;
+        border-radius: 22px;
+        background: white;
+        outline: none;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Default border when not focused */
+      .search-input-container:not(:focus-within) #search-input {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 24px;
+      }
+
+      #search-input::placeholder {
+        color: #999;
+      }
+
+      /* Animation for gradient movement */
+      @keyframes gradientShift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* Search button inside input */
+      #search-btn {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 3;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 18px;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+      }
+
+      #search-btn:hover {
+        transform: translateY(-50%) scale(1.05);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+      }
+
+      #search-btn:active {
+        transform: translateY(-50%) scale(0.98);
+      }
+
+      /* Loading spinner */
+      .search-loading-icon {
+        position: absolute;
+        right: 80px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 3;
+        width: 18px;
+        height: 18px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+
+      .search-input-container:focus-within .search-loading-icon {
+        opacity: 1;
+      }
+
+      .search-spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid transparent;
+        border-top-color: #7873f5;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
       /* 브라우저 기본 드롭다운 마커 감추기 */
       #rack-tree summary::-webkit-details-marker {
         display: none;
@@ -347,17 +543,18 @@
         <button id="toolbar-delete" class="w-1/2 bg-red-500 py-1 rounded text-sm">삭제</button>
       </div>
     </div>
-    <div
-      id="search-bar"
-      class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex space-x-2 bg-white p-2 rounded shadow"
-    >
-      <input
-        id="search-input"
-        type="text"
-        placeholder="품목코드 입력"
-        class="border px-2 py-1 rounded w-48"
-      />
-      <button id="search-btn" class="bg-blue-500 text-white px-3 py-1 rounded">검색</button>
+    <!-- 그라디언트 검색 바 -->
+    <div id="search-bar" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
+      <div class="search-input-container">
+        <div class="gradient-shadow"></div>
+        <div class="input-wrapper">
+          <input id="search-input" type="text" placeholder="품목코드 입력하세요..." />
+        </div>
+        <div class="search-loading-icon">
+          <div class="search-spinner"></div>
+        </div>
+        <button id="search-btn">검색</button>
+      </div>
     </div>
 
     <div
@@ -455,7 +652,7 @@
           <!--추가 설정-->
         </li>
         <li
-          id="tab2"
+          id="tab4"
           class="tab flex-1 flex flex-col items-center py-2 cursor-pointer text-slate-400 hover:text-yellow-300"
         >
           <!-- 사용자 관리 아이콘 -->
@@ -1336,13 +1533,73 @@
       </div>
     </div>
 
-    <div id="cell-info-panel" class="fixed right-5 bottom-5 bg-white p-4 rounded shadow-lg hidden">
-      <h4 class="font-bold mb-2">셀 정보</h4>
-      <div><strong>셀 ID:</strong> <span id="cell-info-id"></span></div>
-      <div><strong>자재 ID:</strong> <span id="cell-info-materialId"></span></div>
-      <div><strong>이름:</strong> <span id="cell-info-name"></span></div>
-      <div><strong>수량:</strong> <span id="cell-info-qty"></span></div>
-      <div><strong>상태:</strong> <span id="cell-info-status"></span></div>
+    <!-- 셀 정보 패널 (left-panel과 동일한 스타일) -->
+    <div
+      id="cell-info-panel"
+      class="fixed right-3 bottom-5 w-[230px] bg-gray-800/90 backdrop-blur-md border border-gray-700 rounded-2xl shadow-xl p-6 hidden z-50"
+    >
+      <!-- 헤더 -->
+      <div class="flex items-center justify-between mb-4">
+        <h4 class="text-lg font-semibold text-white flex items-center">
+          <svg
+            class="w-5 h-5 mr-2 text-blue-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+            />
+          </svg>
+          셀 정보
+        </h4>
+        <button
+          onclick="document.getElementById('cell-info-panel').classList.add('hidden')"
+          class="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+          aria-label="닫기"
+        >
+          <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 구분선 -->
+      <hr class="border-gray-700 mb-4" />
+
+      <!-- 정보 목록 -->
+      <div class="space-y-3">
+        <div class="flex items-start justify-between">
+          <label class="text-sm text-gray-400 min-w-[80px]">셀 ID</label>
+          <span id="cell-info-id" class="text-xs font-medium text-white text-right flex-1"></span>
+        </div>
+
+        <div class="flex items-start justify-between">
+          <label class="text-sm text-gray-400 min-w-[80px]">품목코드</label>
+          <span
+            id="cell-info-materialId"
+            class="text-xs font-medium text-white text-right flex-1"
+          ></span>
+        </div>
+
+        <div class="flex items-start justify-between">
+          <label class="text-sm text-gray-400 min-w-[80px]">이름</label>
+          <span id="cell-info-name" class="text-xs font-medium text-white text-right flex-1"></span>
+        </div>
+
+        <div class="flex items-start justify-between">
+          <label class="text-sm text-gray-400 min-w-[80px]">수량</label>
+          <span id="cell-info-qty" class="text-xs font-medium text-white text-right flex-1"></span>
+        </div>
+      </div>
     </div>
 
     <!-- 툴팁 -->
@@ -1389,6 +1646,7 @@
         CSS2DObject,
       } from '/static/js/package/examples/jsm/renderers/CSS2DRenderer.js';
       import { EdgesGeometry, LineSegments, LineBasicMaterial } from 'three';
+      import * as BufferGeometryUtils from '/static/js/package/examples/jsm/utils/BufferGeometryUtils.js';
 
       import * as THREE from 'three';
 
@@ -1403,7 +1661,57 @@
       }
       let rackGroups = loadGroups();
       function saveGroups() {
-        localStorage.setItem('rackGroups', JSON.stringify(rackGroups));
+        try {
+          localStorage.setItem('rackGroups', JSON.stringify(rackGroups));
+        } catch (e) {
+          console.error('Failed to save groups to localStorage:', e);
+          alert('저장 공간이 부족합니다. 일부 데이터를 삭제해주세요.');
+        }
+      }
+
+      // localStorage 안전 래퍼 함수
+      function safeLocalStorageSet(key, value) {
+        try {
+          localStorage.setItem(key, value);
+          return true;
+        } catch (e) {
+          console.error(`Failed to save ${key} to localStorage:`, e);
+          alert('저장 공간이 부족합니다. 일부 데이터를 삭제해주세요.');
+          return false;
+        }
+      }
+
+      // 입력값 검증 함수 (XSS 방지)
+      function sanitizeInput(str) {
+        if (typeof str !== 'string') return '';
+        return str.replace(/[<>'"&]/g, function (char) {
+          const entities = {
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+            '&': '&amp;',
+          };
+          return entities[char] || char;
+        });
+      }
+
+      // localStorage 데이터 검증 함수
+      function validateRackConfig(config) {
+        return (
+          config &&
+          typeof config.rackId === 'string' &&
+          typeof config.width === 'number' &&
+          config.width > 0 &&
+          typeof config.depth === 'number' &&
+          config.depth > 0 &&
+          typeof config.height === 'number' &&
+          config.height > 0 &&
+          typeof config.levels === 'number' &&
+          config.levels > 0 &&
+          typeof config.cells === 'number' &&
+          config.cells > 0
+        );
       }
 
       // 전역 변수 선언
@@ -1462,7 +1770,7 @@
         openGroups = Array.from(tree.querySelectorAll('details'))
           .filter((d) => d.open)
           .map((d) => d.dataset.group);
-        localStorage.setItem('openGroups', JSON.stringify(openGroups));
+        safeLocalStorageSet('openGroups', JSON.stringify(openGroups));
       }
 
       document.querySelectorAll('.floor-anchor button').forEach((btn) => {
@@ -1534,6 +1842,12 @@
 
       // 3) 바닥 생성/업데이트 함수 수정
       function applyFloorSettings() {
+        // Guard: floorMesh가 초기화되지 않았으면 리턴
+        if (!floorMesh || !floorMesh.geometry) {
+          console.warn('floorMesh is not initialized yet');
+          return;
+        }
+
         // 1) 새 크기 읽기
         const newW = parseFloat(document.getElementById('cfg-floor-width').value) || 100;
         const newD = parseFloat(document.getElementById('cfg-floor-depth').value) || 100;
@@ -1670,6 +1984,12 @@
       let labelsVisible = !isEditMode;
       let labelSprites = [];
 
+      // Material Pool - 템플릿별 재질 재사용
+      const materialPools = {
+        rack: new Map(), // 랙 구조물 재질 (템플릿별)
+        cell: null, // 셀 관련 재질 (전역 공유)
+      };
+
       // 전역 자재 데이터 (예시)
       let rackData = { cells: [] };
 
@@ -1794,12 +2114,21 @@
         previewControls.maxDistance = 10;
 
         // 애니메이션 루프
+        let previewAnimationId = null;
         function animate() {
-          requestAnimationFrame(animate);
+          previewAnimationId = requestAnimationFrame(animate);
           previewControls.update();
           previewRenderer.render(previewScene, previewCamera);
         }
         animate();
+
+        // 미리보기 애니메이션 정리 함수
+        window.stopPreviewAnimation = function () {
+          if (previewAnimationId) {
+            cancelAnimationFrame(previewAnimationId);
+            previewAnimationId = null;
+          }
+        };
       }
 
       // 템플릿 미리보기 업데이트
@@ -1810,6 +2139,9 @@
             if (child.geometry) child.geometry.dispose();
             if (child.material) child.material.dispose();
           });
+          // preview 랙의 유령 셀과 라벨 정리
+          cellMeshes = cellMeshes.filter((mesh) => mesh.userData.rackId !== 'preview');
+          labelSprites = labelSprites.filter((sprite) => sprite.userData.rackId !== 'preview');
         }
 
         const pillarColor = parseInt(
@@ -1867,13 +2199,10 @@
           disposeRackResources(rackObj);
         });
 
-        // 5. racks 배열에서 삭제된 랙 제거 및 유효한 객체만 남김
+        // 5. racks 배열에서 삭제된 랙 제거 및 유효한 객체만 남김 (Set 사용으로 성능 개선)
+        const deleteSet = new Set(rackIdsToDelete);
         racks = racks.filter(
-          (rack) =>
-            rack &&
-            rack.userData &&
-            rack.userData.rackId &&
-            !rackIdsToDelete.includes(rack.userData.rackId),
+          (rack) => rack?.userData?.rackId && !deleteSet.has(rack.userData.rackId),
         );
 
         // 6. 선택된 랙 및 헬퍼 초기화
@@ -1922,6 +2251,7 @@
           input.step = '0.01';
           input.value = num.toFixed(2);
           input.style.width = '50px';
+          input.style.color = 'black';
 
           // container 내용 교체
           container.innerHTML = '';
@@ -2022,6 +2352,7 @@
       async function init() {
         stats = new Stats();
         stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+        stats.dom.style.display = 'none'; // 초기 상태 숨김
         document.body.appendChild(stats.dom);
 
         scene = new THREE.Scene();
@@ -2256,8 +2587,10 @@
           });
         }
 
-        // 저장된 랙 로드
-        const savedConfigs = JSON.parse(localStorage.getItem('allRackConfigs')) || [];
+        // 저장된 랙 로드 (데이터 검증 포함)
+        const savedConfigs = (JSON.parse(localStorage.getItem('allRackConfigs')) || []).filter(
+          validateRackConfig,
+        );
         for (const config of savedConfigs) {
           const rack = createRack(
             config.rackId,
@@ -2364,7 +2697,8 @@
           isDragging = false;
 
           if (editMode && selectedRacks.length > 0) {
-            // 랙 드래그 로직
+            // 랙 드래그 로직 (파렛트 선택 해제로 경쟁 조건 방지)
+            clearSelectedPallets();
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
@@ -2393,7 +2727,8 @@
               controls.enabled = false;
             }
           } else if (editMode && selectedPallets.length > 0) {
-            // 파렛트 드래그 로직
+            // 파렛트 드래그 로직 (랙 선택 해제로 경쟁 조건 방지)
+            clearSelectedRacks();
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
@@ -2526,6 +2861,9 @@
 
         // 그리고 초기값(checked 상태)을 반영하려면 한 번 실행
         updateShadowQuality();
+
+        // FPS 토글 초기화 (stats가 초기화된 후 실행)
+        initializeFPSToggle();
 
         animate();
         setEditMode(false); // 최초 실행은 뷰어 모드
@@ -2681,7 +3019,7 @@
         toolbarInputs.levels.value = config.levels || 5;
         toolbarInputs.cells.value = config.cells || 4;
         toolbarInputs.rotation.value = THREE.MathUtils.radToDeg(rackObj.rotation.y) || 0;
-        if (toolbarInputs.group) toolbarInputs.group.value = cfg.group || '기본';
+        if (toolbarInputs.group) toolbarInputs.group.value = config.group || '기본';
         // 툴바 위치 조정
         updateToolbarPosition(rackObj);
       }
@@ -2818,8 +3156,10 @@
         // 초기화
         tree.innerHTML = '';
 
-        // 저장된 모든 랙 설정
-        const configs = JSON.parse(localStorage.getItem('allRackConfigs')) || [];
+        // 저장된 모든 랙 설정 (데이터 검증 포함)
+        const configs = (JSON.parse(localStorage.getItem('allRackConfigs')) || []).filter(
+          validateRackConfig,
+        );
 
         rackGroups.forEach((groupName) => {
           // 이 그룹에 속한 랙만 필터
@@ -2879,11 +3219,13 @@
             e.preventDefault();
             details.classList.remove('bg-gray-600');
             const rackId = e.dataTransfer.getData('text/plain');
-            const all = JSON.parse(localStorage.getItem('allRackConfigs')) || [];
+            const all = (JSON.parse(localStorage.getItem('allRackConfigs')) || []).filter(
+              validateRackConfig,
+            );
             const target = all.find((c) => c.rackId === rackId);
             if (target) {
               target.group = groupName;
-              localStorage.setItem('allRackConfigs', JSON.stringify(all));
+              safeLocalStorageSet('allRackConfigs', JSON.stringify(all));
               const rackObj = racks.find((r) => r.userData.rackId === rackId);
               if (rackObj) rackObj.userData.config.group = groupName;
               loadRackTree();
@@ -3587,6 +3929,112 @@
         if (spotLight) spotLight.intensity = norm * 2.0;
       }
 
+      /**
+       * Geometry 병합 헬퍼 함수
+       * 여러 geometry를 하나로 병합하여 Draw Call 감소
+       */
+      function mergeGeometries(geometries) {
+        if (!geometries || geometries.length === 0) return null;
+        if (geometries.length === 1) return geometries[0];
+
+        // BufferGeometryUtils.mergeGeometries 사용
+        return BufferGeometryUtils.mergeGeometries(geometries, false);
+      }
+
+      /**
+       * Material Pool 관리 함수
+       * 템플릿별로 재질을 한 번만 생성하고 재사용하여 메모리 사용량 최적화
+       */
+      function getMaterialsForTemplate(template, templateId = 'default') {
+        // 캐시 키 생성 (색상 값으로 고유 키 생성)
+        const cacheKey = `${templateId}-${template.pillar.color}-${template.shelf.color}`;
+
+        // 이미 생성된 재질이 있으면 반환
+        if (materialPools.rack.has(cacheKey)) {
+          return materialPools.rack.get(cacheKey);
+        }
+
+        // 새로운 재질 세트 생성
+        const materials = {
+          pillar: new THREE.MeshStandardMaterial({
+            color: template.pillar.color,
+            metalness: template.pillar.metalness,
+            roughness: template.pillar.roughness,
+          }),
+          shelf: new THREE.MeshStandardMaterial({
+            color: template.shelf.color,
+            metalness: template.shelf.metalness,
+            roughness: template.shelf.roughness,
+          }),
+          plate: new THREE.MeshStandardMaterial({
+            color: template.shelf.color,
+            metalness: 0.1,
+            roughness: 0.7,
+          }),
+        };
+
+        // 캐시에 저장
+        materialPools.rack.set(cacheKey, materials);
+        return materials;
+      }
+
+      /**
+       * 셀 재질 가져오기 (전역 공유)
+       */
+      function getCellMaterials() {
+        // 이미 생성되어 있으면 반환
+        if (materialPools.cell) {
+          return materialPools.cell;
+        }
+
+        // 셀 관련 재질 한 번만 생성
+        materialPools.cell = {
+          transparent: new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0.0,
+            depthWrite: false,
+          }),
+          highlightFull: new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.3,
+          }),
+          highlightEmpty: new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.3,
+          }),
+          highlightGood: new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.3,
+          }),
+          highlightWarning: new THREE.MeshBasicMaterial({
+            color: 0xffaa00,
+            transparent: true,
+            opacity: 0.3,
+          }),
+          hoverFull: new THREE.MeshBasicMaterial({
+            color: 0x00aaff,
+            transparent: true,
+            opacity: 0.5,
+          }),
+          hoverEmpty: new THREE.MeshBasicMaterial({
+            color: 0xffaa00,
+            transparent: true,
+            opacity: 0.5,
+          }),
+          standard: [
+            new THREE.MeshStandardMaterial({ color: 0xaa3333, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0x3333aa, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0x33aa33, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0xaaaa33, metalness: 0.2, roughness: 0.8 }),
+          ],
+        };
+
+        return materialPools.cell;
+      }
+
       // 랙을 생성하는 함수. Three.js를 사용해 3D 랙 구조를 생성하고 셀을 추가함
       // rackId: 랙의 고유 ID
       // width, depth, height: 랙의 너비, 깊이, 높이
@@ -3661,24 +4109,16 @@
         // 판 두께 설정
         const plateThickness = template.plateThickness || 0.05;
 
-        // 재료 정의
-        const pillarMat = new THREE.MeshStandardMaterial({
-          color: template.pillar.color,
-          metalness: template.pillar.metalness,
-          roughness: template.pillar.roughness,
-        });
-        const shelfMat = new THREE.MeshStandardMaterial({
-          color: template.shelf.color,
-          metalness: template.shelf.metalness,
-          roughness: template.shelf.roughness,
-        });
-        const plateMat = new THREE.MeshStandardMaterial({
-          color: template.shelf.color,
-          metalness: 0.1,
-          roughness: 0.7,
-        });
+        // 재료 정의 - Material Pool에서 가져오기 (메모리 최적화)
+        const materials = getMaterialsForTemplate(template, templateId);
+        const pillarMat = materials.pillar;
+        const shelfMat = materials.shelf;
+        const plateMat = materials.plate;
 
-        // 기둥 생성
+        // Geometry 병합 최적화: pillar 구조물 (기둥 + 수평 바)을 하나로 병합
+        const pillarGeometries = [];
+
+        // 기둥 geometry 생성 및 배열에 추가
         const pillarGeom = new THREE.BoxGeometry(
           template.pillar.thickness,
           pillarHeight,
@@ -3691,14 +4131,12 @@
           { x: width / 2, z: -depth / 2 },
         ];
         pillars.forEach((pos) => {
-          const pillar = new THREE.Mesh(pillarGeom.clone(), pillarMat);
-          pillar.position.set(pos.x, pillarBottomY, pos.z);
-          pillar.castShadow = true;
-          pillar.receiveShadow = true;
-          rackStructureGroup.add(pillar);
+          const geom = pillarGeom.clone();
+          geom.translate(pos.x, pillarBottomY, pos.z);
+          pillarGeometries.push(geom);
         });
 
-        // 수평 바 생성
+        // 수평 바 geometry 생성 및 배열에 추가
         const usableHeight = pillarHeight - 2 * margin;
         const adjustedLevelHeight = usableHeight / levelCount;
         const horizBarGeom = new THREE.BoxGeometry(
@@ -3708,20 +4146,16 @@
         );
         for (let i = 0; i <= levelCount; i++) {
           const y = margin + i * adjustedLevelHeight;
-          const leftBar = new THREE.Mesh(horizBarGeom.clone(), pillarMat);
-          leftBar.position.set(-width / 2, y, 0);
-          leftBar.castShadow = true;
-          leftBar.receiveShadow = true;
-          rackStructureGroup.add(leftBar);
+          const leftBarGeom = horizBarGeom.clone();
+          leftBarGeom.translate(-width / 2, y, 0);
+          pillarGeometries.push(leftBarGeom);
 
-          const rightBar = new THREE.Mesh(horizBarGeom.clone(), pillarMat);
-          rightBar.position.set(width / 2, y, 0);
-          rightBar.castShadow = true;
-          rightBar.receiveShadow = true;
-          rackStructureGroup.add(rightBar);
+          const rightBarGeom = horizBarGeom.clone();
+          rightBarGeom.translate(width / 2, y, 0);
+          pillarGeometries.push(rightBarGeom);
         }
 
-        // 대각선 보강재
+        // 대각선 보강재도 배열에 추가 (회전 적용 필요)
         if (template.supports.enabled && template.supports.diagonal) {
           for (let i = 0; i < levelCount; i++) {
             const bottomY = margin + i * adjustedLevelHeight;
@@ -3734,65 +4168,72 @@
               template.pillar.thickness,
             );
             const angle = Math.atan2(adjustedLevelHeight, depth);
+            const rotationX = i % 2 === 0 ? -(Math.PI / 2 - angle) : Math.PI / 2 - angle;
 
-            const leftDiag = new THREE.Mesh(diagGeom.clone(), pillarMat);
-            leftDiag.position.set(-width / 2, centerY, 0);
-            leftDiag.rotation.x = i % 2 === 0 ? -(Math.PI / 2 - angle) : Math.PI / 2 - angle;
-            leftDiag.castShadow = true;
-            leftDiag.receiveShadow = true;
-            rackStructureGroup.add(leftDiag);
+            // 왼쪽 대각선
+            const leftDiagGeom = diagGeom.clone();
+            leftDiagGeom.rotateX(rotationX);
+            leftDiagGeom.translate(-width / 2, centerY, 0);
+            pillarGeometries.push(leftDiagGeom);
 
-            const rightDiag = new THREE.Mesh(diagGeom.clone(), pillarMat);
-            rightDiag.position.set(width / 2, centerY, 0);
-            rightDiag.rotation.x = i % 2 === 0 ? -(Math.PI / 2 - angle) : Math.PI / 2 - angle;
-            rightDiag.castShadow = true;
-            rightDiag.receiveShadow = true;
-            rackStructureGroup.add(rightDiag);
+            // 오른쪽 대각선
+            const rightDiagGeom = diagGeom.clone();
+            rightDiagGeom.rotateX(rotationX);
+            rightDiagGeom.translate(width / 2, centerY, 0);
+            pillarGeometries.push(rightDiagGeom);
           }
         }
 
-        // 선반 생성 및 선반 위 판 추가
+        // Pillar 구조물 병합 및 mesh 생성
+        const mergedPillarGeometry = mergeGeometries(pillarGeometries);
+        const pillarStructureMesh = new THREE.Mesh(mergedPillarGeometry, pillarMat);
+        // Shadow 최적화: 병합된 pillar 구조물은 그림자 드리움
+        pillarStructureMesh.castShadow = true;
+        pillarStructureMesh.receiveShadow = false;
+        rackStructureGroup.add(pillarStructureMesh);
+
+        // Geometry 병합 최적화: 선반 구조물과 판을 각각 병합
+        const shelfGeometries = [];
+        const plateGeometries = [];
+
         for (let i = 0; i < levelCount; i++) {
           const y = i * levelHeight;
+
+          // 선반 프레임 앞
           const frameGeomFront = new THREE.BoxGeometry(
             width - template.shelf.thickness,
             template.shelf.thickness,
             template.shelf.thickness,
           );
-          const frameFront = new THREE.Mesh(frameGeomFront, shelfMat);
-          frameFront.position.set(0, y + 0.3, depth / 2 - template.shelf.thickness);
-          frameFront.castShadow = true;
-          frameFront.receiveShadow = true;
-          rackStructureGroup.add(frameFront);
+          const frontGeom = frameGeomFront.clone();
+          frontGeom.translate(0, y + 0.3, depth / 2 - template.shelf.thickness);
+          shelfGeometries.push(frontGeom);
 
+          // 선반 프레임 뒤
           const frameGeomBack = new THREE.BoxGeometry(
             width - template.shelf.thickness,
             template.shelf.thickness,
             template.shelf.thickness,
           );
-          const frameBack = new THREE.Mesh(frameGeomBack, shelfMat);
-          frameBack.position.set(0, y + 0.3, -depth / 2 + template.shelf.thickness);
-          frameBack.castShadow = true;
-          frameBack.receiveShadow = true;
-          rackStructureGroup.add(frameBack);
+          const backGeom = frameGeomBack.clone();
+          backGeom.translate(0, y + 0.3, -depth / 2 + template.shelf.thickness);
+          shelfGeometries.push(backGeom);
 
+          // 선반 프레임 좌우
           const frameGeomSide = new THREE.BoxGeometry(
             template.shelf.thickness,
             template.shelf.thickness,
             depth - template.shelf.thickness,
           );
-          const frameLeft = new THREE.Mesh(frameGeomSide, shelfMat);
-          frameLeft.position.set(-width / 2 + template.shelf.thickness, y + 0.3, 0);
-          frameLeft.castShadow = true;
-          frameLeft.receiveShadow = true;
-          rackStructureGroup.add(frameLeft);
+          const leftGeom = frameGeomSide.clone();
+          leftGeom.translate(-width / 2 + template.shelf.thickness, y + 0.3, 0);
+          shelfGeometries.push(leftGeom);
 
-          const frameRight = new THREE.Mesh(frameGeomSide, shelfMat);
-          frameRight.position.set(width / 2 - template.shelf.thickness, y + 0.3, 0);
-          frameRight.castShadow = true;
-          frameRight.receiveShadow = true;
-          rackStructureGroup.add(frameRight);
+          const rightGeom = frameGeomSide.clone();
+          rightGeom.translate(width / 2 - template.shelf.thickness, y + 0.3, 0);
+          shelfGeometries.push(rightGeom);
 
+          // 서포트
           if (template.supports.enabled) {
             for (let j = 1; j < 5; j++) {
               const supportGeom = new THREE.BoxGeometry(
@@ -3800,37 +4241,51 @@
                 0.08,
                 depth - template.shelf.thickness,
               );
-              const support = new THREE.Mesh(supportGeom, shelfMat);
-              support.position.set(-width / 2 + (width / 5) * j, y + 0.3, 0);
-              support.castShadow = true;
-              support.receiveShadow = true;
-              rackStructureGroup.add(support);
+              const suppGeom = supportGeom.clone();
+              suppGeom.translate(-width / 2 + (width / 5) * j, y + 0.3, 0);
+              shelfGeometries.push(suppGeom);
             }
           }
 
-          // 선반 위에 판 추가 (shelfPlate가 true일 경우)
+          // 선반 위 판
           if (template.shelfPlate) {
             const plateGeom = new THREE.BoxGeometry(
               width - template.shelf.thickness * 2,
               plateThickness,
               depth - template.shelf.thickness * 2,
             );
-            const plate = new THREE.Mesh(plateGeom, plateMat);
-            plate.position.set(0, y + 0.3 + template.shelf.thickness / 2 + plateThickness / 2, 0);
-            plate.castShadow = true;
-            plate.receiveShadow = true;
-            rackStructureGroup.add(plate);
+            const plGeom = plateGeom.clone();
+            plGeom.translate(0, y + 0.3 + template.shelf.thickness / 2 + plateThickness / 2, 0);
+            plateGeometries.push(plGeom);
           }
         }
 
-        // 랙 상단에 판 추가 (topPlate가 true일 경우)
+        // 랙 상단 판 추가
         if (template.topPlate) {
           const topPlateGeom = new THREE.BoxGeometry(width, plateThickness, depth);
-          const topPlate = new THREE.Mesh(topPlateGeom, plateMat);
-          topPlate.position.set(0, pillarHeight - plateThickness / 2, 0);
-          topPlate.castShadow = true;
-          topPlate.receiveShadow = true;
-          rackStructureGroup.add(topPlate);
+          const topGeom = topPlateGeom.clone();
+          topGeom.translate(0, pillarHeight - plateThickness / 2, 0);
+          plateGeometries.push(topGeom);
+        }
+
+        // Shelf 구조물 병합 및 mesh 생성
+        if (shelfGeometries.length > 0) {
+          const mergedShelfGeometry = mergeGeometries(shelfGeometries);
+          const shelfStructureMesh = new THREE.Mesh(mergedShelfGeometry, shelfMat);
+          // Shadow 최적화: 선반 구조물은 그림자 끔
+          shelfStructureMesh.castShadow = false;
+          shelfStructureMesh.receiveShadow = false;
+          rackStructureGroup.add(shelfStructureMesh);
+        }
+
+        // Plate 병합 및 mesh 생성
+        if (plateGeometries.length > 0) {
+          const mergedPlateGeometry = mergeGeometries(plateGeometries);
+          const plateStructureMesh = new THREE.Mesh(mergedPlateGeometry, plateMat);
+          // Shadow 최적화: 판은 그림자 받기만 (받는 표면)
+          plateStructureMesh.castShadow = false;
+          plateStructureMesh.receiveShadow = true;
+          rackStructureGroup.add(plateStructureMesh);
         }
 
         // 셀 생성
@@ -3844,15 +4299,14 @@
           rackGroup.userData.cells,
         );
 
-        // 기존 랙 생성 로직 끝 부분에 있는 traverse 콜백을 아래처럼 수정하세요.
+        // BoundingBox 계산 및 Shadow 최적화
         rackGroup.traverse((child) => {
           if (child.isMesh) {
-            // 기존에 있던 BoundingBox 계산
+            // BoundingBox 계산
             if (child.geometry) child.geometry.computeBoundingBox();
 
-            // 모든 Mesh에 그림자 권한 부여
-            child.castShadow = true;
-            child.receiveShadow = true;
+            // Shadow 최적화: 개별 부품에서 이미 설정했으므로 여기서는 설정하지 않음
+            // 기둥만 castShadow = true, 판은 receiveShadow = true로 이미 설정됨
           }
         });
 
@@ -3909,7 +4363,6 @@
         cellsPerLevel,
         rackCells,
       ) {
-        
         if (!levelCount || isNaN(levelCount) || levelCount < 1) levelCount = 1;
         if (!cellsPerLevel || isNaN(cellsPerLevel) || cellsPerLevel < 1) cellsPerLevel = 1;
 
@@ -3924,48 +4377,16 @@
         const colWidth = width / cellsPerLevel;
         const cellHeight = 0.9;
 
-        // 재질 정의
-        const transparentMaterial = new THREE.MeshBasicMaterial({
-          transparent: true,
-          opacity: 0.0,
-          depthWrite: false,
-        });
-        const highlightMaterialFull = new THREE.MeshBasicMaterial({
-          color: 0x00ff00,
-          transparent: true,
-          opacity: 0.3,
-        });
-        const highlightMaterialEmpty = new THREE.MeshBasicMaterial({
-          color: 0xff0000,
-          transparent: true,
-          opacity: 0.3,
-        });
-        const highlightMaterialGood = new THREE.MeshBasicMaterial({
-          color: 0x00ff00,
-          transparent: true,
-          opacity: 0.3,
-        });
-        const highlightMaterialWarning = new THREE.MeshBasicMaterial({
-          color: 0xffaa00,
-          transparent: true,
-          opacity: 0.3,
-        });
-        const hoverMaterialFull = new THREE.MeshBasicMaterial({
-          color: 0x00aaff,
-          transparent: true,
-          opacity: 0.5,
-        });
-        const hoverMaterialEmpty = new THREE.MeshBasicMaterial({
-          color: 0xffaa00,
-          transparent: true,
-          opacity: 0.5,
-        });
-        const standardMaterials = [
-          new THREE.MeshStandardMaterial({ color: 0xaa3333, metalness: 0.2, roughness: 0.8 }),
-          new THREE.MeshStandardMaterial({ color: 0x3333aa, metalness: 0.2, roughness: 0.8 }),
-          new THREE.MeshStandardMaterial({ color: 0x33aa33, metalness: 0.2, roughness: 0.8 }),
-          new THREE.MeshStandardMaterial({ color: 0xaaaa33, metalness: 0.2, roughness: 0.8 }),
-        ];
+        // 재질 정의 - Material Pool에서 가져오기 (메모리 최적화)
+        const cellMats = getCellMaterials();
+        const transparentMaterial = cellMats.transparent;
+        const highlightMaterialFull = cellMats.highlightFull;
+        const highlightMaterialEmpty = cellMats.highlightEmpty;
+        const highlightMaterialGood = cellMats.highlightGood;
+        const highlightMaterialWarning = cellMats.highlightWarning;
+        const hoverMaterialFull = cellMats.hoverFull;
+        const hoverMaterialEmpty = cellMats.hoverEmpty;
+        const standardMaterials = cellMats.standard;
         const boxGeometry = new THREE.BoxGeometry(colWidth * 0.8, 0.7, depth * 0.8);
 
         // 셀 데이터 크기 조정
@@ -4016,17 +4437,18 @@
               labelSprites.push(sprite);
             }
 
+            // Material Pool의 재질을 직접 참조 (clone 불필요, 메모리 최적화)
             cellMesh.userData.highlightMaterial = cellMesh.userData.cellData.hasMaterial
-              ? highlightMaterialFull.clone()
-              : highlightMaterialEmpty.clone();
+              ? highlightMaterialFull
+              : highlightMaterialEmpty;
             cellMesh.userData.hoverMaterial = cellMesh.userData.cellData.hasMaterial
-              ? hoverMaterialFull.clone()
-              : hoverMaterialEmpty.clone();
+              ? hoverMaterialFull
+              : hoverMaterialEmpty;
             cellMesh.userData.statusMaterial =
               cellMesh.userData.cellData.hasMaterial &&
               cellMesh.userData.cellData.status === '점검 필요'
-                ? highlightMaterialWarning.clone()
-                : highlightMaterialGood.clone();
+                ? highlightMaterialWarning
+                : highlightMaterialGood;
 
             cellContainer.add(cellMesh);
             cellMeshes.push(cellMesh);
@@ -4037,7 +4459,7 @@
 
       // 왼쪽 패널의 "랙 추가" 버튼 이벤트
       document.getElementById('add-rack-left-panel').addEventListener('click', async () => {
-        const rackId = document.getElementById('rack-id').value.trim();
+        const rackId = sanitizeInput(document.getElementById('rack-id').value.trim());
         const templateId = selectedTemplateId; // 선택된 템플릿 ID 사용
         const template = rackTemplates[templateId];
         const width =
@@ -4157,6 +4579,9 @@
         sprite.position.set(x, y, z);
         sprite.scale.set(1.5, 0.75, 1);
         sprite.visible = false;
+        // Store texture reference for cleanup
+        sprite.userData.texture = texture;
+        sprite.userData.material = spriteMaterial;
         labelSprites.push(sprite);
         return sprite;
       }
@@ -4336,7 +4761,6 @@
           document.getElementById('cell-info-name').textContent = d.name || '–';
           document.getElementById('cell-info-qty').textContent =
             d.quantity != null ? d.quantity : '0';
-          document.getElementById('cell-info-status').textContent = d.status || '빈 셀';
           document.getElementById('cell-info-panel').classList.remove('hidden');
         } else {
           document.getElementById('cell-info-panel').classList.add('hidden');
@@ -4440,20 +4864,31 @@
 
       function updateTooltip(cell, x, y) {
         const cellData = cell.userData.cellData || { hasMaterial: false };
-        // cellId 표시
-        let tooltipContent = `셀 ID: ${cell.userData.cellId}<br>`;
-        // 기존 Row/Level 정보
-        tooltipContent += `셀 위치: Row ${cell.userData.cellIndex + 1}, Level ${
-          cell.userData.level + 1
-        }`;
+
+        // 세련된 툴팁 구조
+        let tooltipContent = `<div class="tooltip-header">${
+          cell.userData.cellId || '셀 정보'
+        }</div>`;
+
         if (cellData.hasMaterial) {
-          tooltipContent +=
-            `<br>자재: ${cellData.name || '정보 없음'}` +
-            `<br>수량: ${cellData.quantity || 0}개` +
-            `<br>상태: ${cellData.status || '정보 없음'}`;
+          tooltipContent += `
+            <div class="tooltip-row">
+              <span class="tooltip-label">품목코드</span>
+              <span class="tooltip-value">${cellData.materialId || '정보 없음'}</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="tooltip-label">자재명</span>
+              <span class="tooltip-value">${cellData.name || '정보 없음'}</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="tooltip-label">수량</span>
+              <span class="tooltip-value">${cellData.quantity || 0}개</span>
+            </div>
+          `;
         } else {
-          tooltipContent += `<br>빈 셀`;
+          tooltipContent += `<div class="tooltip-empty">빈 셀</div>`;
         }
+
         tooltip.innerHTML = tooltipContent;
         tooltip.style.left = x + 15 + 'px';
         tooltip.style.top = y + 15 + 'px';
@@ -4750,6 +5185,9 @@
           // 캐시된 데이터가 없으면 fetch로 파일 읽기
           if (!cachedRackData) {
             const response = await fetch('/static/data/racks.json');
+            if (!response.ok) {
+              throw new Error(`Failed to load rack data: ${response.status}`);
+            }
             cachedRackData = await response.json();
           }
           const dataList = cachedRackData;
@@ -5154,12 +5592,50 @@
         if (!rack) return;
 
         rack.traverse((child) => {
-          if (child.geometry) child.geometry.dispose();
-          if (child.material) {
-            if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose());
-            else child.material.dispose();
+          // Dispose geometry
+          if (child.geometry) {
+            child.geometry.dispose();
           }
-          if (child.dispose) child.dispose(); // Handle any custom disposal
+
+          // Dispose material and all textures
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((m) => {
+                if (m.map) m.map.dispose();
+                if (m.lightMap) m.lightMap.dispose();
+                if (m.bumpMap) m.bumpMap.dispose();
+                if (m.normalMap) m.normalMap.dispose();
+                if (m.specularMap) m.specularMap.dispose();
+                if (m.envMap) m.envMap.dispose();
+                if (m.aoMap) m.aoMap.dispose();
+                if (m.emissiveMap) m.emissiveMap.dispose();
+                m.dispose();
+              });
+            } else {
+              if (child.material.map) child.material.map.dispose();
+              if (child.material.lightMap) child.material.lightMap.dispose();
+              if (child.material.bumpMap) child.material.bumpMap.dispose();
+              if (child.material.normalMap) child.material.normalMap.dispose();
+              if (child.material.specularMap) child.material.specularMap.dispose();
+              if (child.material.envMap) child.material.envMap.dispose();
+              if (child.material.aoMap) child.material.aoMap.dispose();
+              if (child.material.emissiveMap) child.material.emissiveMap.dispose();
+              child.material.dispose();
+            }
+          }
+
+          // Dispose sprite textures stored in userData
+          if (child.userData && child.userData.texture) {
+            child.userData.texture.dispose();
+          }
+          if (child.userData && child.userData.material) {
+            child.userData.material.dispose();
+          }
+
+          // Handle any custom disposal
+          if (child.dispose && typeof child.dispose === 'function') {
+            child.dispose();
+          }
         });
 
         // Explicitly nullify references
@@ -5397,8 +5873,17 @@
         renderer.render(scene, camera);
         labelRenderer.render(scene, camera);
         stats.end();
-        requestAnimationFrame(animate);
+        mainAnimationId = requestAnimationFrame(animate);
       }
+
+      // 메인 애니메이션 정리 함수
+      let mainAnimationId = null;
+      window.stopMainAnimation = function () {
+        if (mainAnimationId) {
+          cancelAnimationFrame(mainAnimationId);
+          mainAnimationId = null;
+        }
+      };
 
       function generateUniqueId() {
         return 'uid-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
@@ -5671,10 +6156,17 @@
           if (child.geometry) child.geometry.dispose();
           if (child.material) child.material.dispose();
         });
-        cellMeshes = cellMeshes.filter((mesh) => mesh.userData.rackId !== 'temp');
-        labelSprites = labelSprites.filter((sprite) => sprite.userData.rackId !== 'temp');
+        // 'temp' 및 'preview' rackId를 가진 유령 셀과 라벨 제거
+        cellMeshes = cellMeshes.filter(
+          (mesh) => mesh.userData.rackId !== 'temp' && mesh.userData.rackId !== 'preview',
+        );
+        labelSprites = labelSprites.filter(
+          (sprite) => sprite.userData.rackId !== 'temp' && sprite.userData.rackId !== 'preview',
+        );
         renderer.dispose();
-        racks = racks.filter((r) => r.userData.rackId !== 'temp'); // 혹시 모를 경우 제거
+        racks = racks.filter(
+          (r) => r.userData.rackId !== 'temp' && r.userData.rackId !== 'preview',
+        );
 
         return thumbnailUrl;
       }
@@ -6075,55 +6567,45 @@
         });
       }
 
-      const fpsToggle = document.getElementById('fps-toggle');
-      const fpsStatusIndicator = document.getElementById('fps-status-indicator');
+      // FPS 토글 초기화 함수
+      function initializeFPSToggle() {
+        const fpsToggle = document.getElementById('fps-toggle');
+        const fpsStatusIndicator = document.getElementById('fps-status-indicator');
 
-      // --- THIS IS THE CRUCIAL PART ---
-      // Ensure 'stats' is your initialized stats.js instance.
-      // Or, if your monitor element has a specific ID, use:
-      // const performanceMonitorElement = document.getElementById('your-monitor-id');
-
-      document.body.appendChild(stats.dom); // Example: Appending stats.js panel to the body
-      const performanceMonitorElement = stats.dom; // Assign the DOM element
-      // --- END CRUCIAL PART ---
-
-      function updatePerformanceMonitorVisibility() {
-        if (!performanceMonitorElement) {
-          // Guard clause
-          console.error('Performance monitor element is not defined!');
-          return;
-        }
-
-        if (fpsToggle.checked) {
-          performanceMonitorElement.style.display = 'block'; // Or however your monitor is shown
-          if (fpsStatusIndicator) fpsStatusIndicator.textContent = '표시 중'; // "Showing"
+        // stats가 초기화되었는지 확인
+        let performanceMonitorElement = null;
+        if (stats && stats.dom) {
+          if (!document.body.contains(stats.dom)) {
+            document.body.appendChild(stats.dom);
+          }
+          performanceMonitorElement = stats.dom;
         } else {
-          performanceMonitorElement.style.display = 'none'; // Or however your monitor is hidden
-          if (fpsStatusIndicator) fpsStatusIndicator.textContent = '숨김'; // "Hidden"
+          console.warn('stats is not initialized yet');
+          return; // stats가 없으면 조기 종료
+        }
+
+        function updatePerformanceMonitorVisibility() {
+          if (!performanceMonitorElement) {
+            console.warn('Performance monitor element is not available');
+            return;
+          }
+
+          if (fpsToggle && fpsToggle.checked) {
+            performanceMonitorElement.style.display = 'block';
+            if (fpsStatusIndicator) fpsStatusIndicator.textContent = '표시 중';
+          } else {
+            performanceMonitorElement.style.display = 'none';
+            if (fpsStatusIndicator) fpsStatusIndicator.textContent = '숨김';
+          }
+        }
+
+        // Add event listener to the toggle
+        if (fpsToggle) {
+          fpsToggle.addEventListener('change', updatePerformanceMonitorVisibility);
+          // Set initial state
+          updatePerformanceMonitorVisibility();
         }
       }
-
-      // Add event listener to the toggle
-      if (fpsToggle) {
-        fpsToggle.addEventListener('change', updatePerformanceMonitorVisibility);
-      }
-
-      // Set initial state when the page loads
-      // Ensure this runs after the performanceMonitorElement is defined and fpsToggle is initialized
-      // Make sure to call this after 'performanceMonitorElement' has a valid value.
-      if (fpsToggle && performanceMonitorElement) {
-        // Check if both exist
-        updatePerformanceMonitorVisibility();
-      } else {
-        if (!fpsToggle) console.error('FPS Toggle not found');
-        if (!performanceMonitorElement)
-          console.error('Performance Monitor Element not defined for initial call');
-      }
-
-      // Set initial state when the page loads
-      // Ensure this runs after the performanceMonitorElement is available and fpsToggle is initialized
-      // For example, if fpsToggle can be initially checked via HTML or other JS:
-      // updatePerformanceMonitorVisibility();
 
       // 랙 위에 화살표를 띄워 주는 헬퍼 (이미 작성하신 그대로 사용)
       function createArrowAboveRack(rack) {
@@ -6227,9 +6709,10 @@
         document.getElementById('cfg-rotation-value'),
         document.getElementById('cfg-rotation-range'),
         (v) => {
-          // 예: updateRotation(v);
-          document.getElementById('cfg-rotation-value').value = v;
-          // … 회전 반영 로직 호출
+          // 회전 변경 시 설정 즉시 적용
+          if (typeof applyCfgPanelConfig === 'function') {
+            applyCfgPanelConfig();
+          }
         },
       );
 
