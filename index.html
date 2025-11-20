@@ -2530,8 +2530,49 @@
               rimLight.shadow.map = null;
             }
 
-            // 그림자 맵 업데이트 필요
-            renderer.shadowMap.needsUpdate = true;
+            // 그림자가 현재 활성화되어 있는 경우에만 재설정
+            const shadowToggle = document.getElementById('shadow-toggle');
+            if (shadowToggle && shadowToggle.checked) {
+              // 그림자를 잠깐 껐다가 다시 켜서 변경사항 즉시 반영
+              renderer.shadowMap.enabled = false;
+
+              // 다음 프레임에서 그림자 다시 활성화
+              setTimeout(() => {
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.needsUpdate = true;
+
+                // 모든 메시의 그림자 설정 재적용
+                scene.traverse((obj) => {
+                  if (obj.isMesh) {
+                    if (obj.name === 'pillarStructure') {
+                      obj.castShadow = true;
+                      obj.receiveShadow = false;
+                    } else if (obj.name === 'plateStructure') {
+                      obj.castShadow = false;
+                      obj.receiveShadow = true;
+                    } else if (obj.name === 'shelfStructure') {
+                      obj.castShadow = false;
+                      obj.receiveShadow = false;
+                    } else if (obj === floorMesh) {
+                      obj.castShadow = false;
+                      obj.receiveShadow = true;
+                    } else {
+                      obj.castShadow = true;
+                      obj.receiveShadow = true;
+                    }
+                  }
+                });
+
+                // 라이트 그림자 재활성화
+                mainLight.castShadow = true;
+                if (spotLight) spotLight.castShadow = true;
+                if (fillLight) fillLight.castShadow = true;
+                if (rimLight) rimLight.castShadow = true;
+              }, 10);
+            } else {
+              // 그림자가 비활성화 상태면 needsUpdate만 설정
+              renderer.shadowMap.needsUpdate = true;
+            }
           });
         });
 
