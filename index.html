@@ -2452,7 +2452,7 @@
                 obj.receiveShadow = enabled;
               } else if (obj.name === 'shelfStructure') {
                 obj.castShadow = false;
-                obj.receiveShadow = false;
+                obj.receiveShadow = enabled;
               } else if (obj === floorMesh) {
                 obj.castShadow = false;
                 obj.receiveShadow = enabled;
@@ -4939,14 +4939,9 @@
       function applyCellHover(cell) {
         // hover용 머티리얼 적용
         cell.material = cell.userData.hoverMaterial;
-        if (!cell.userData.cellData.hasMaterial) {
-          cell.castShadow = false;
-          cell.receiveShadow = false;
-        } else {
-          // 물건 있는 셀은 기존 그림자 설정 유지
-          cell.castShadow = true;
-          cell.receiveShadow = true;
-        }
+        // 투명 셀 메시는 항상 그림자 없음
+        cell.castShadow = false;
+        cell.receiveShadow = false;
         // contentMesh도 살짝 키우기
         if (cell.userData.contentMesh) {
           cell.userData.contentMesh.scale.set(1.1, 1.1, 1.1);
@@ -4959,9 +4954,9 @@
         // 원래 머티리얼 복원
         cell.material = cell.userData.originalMaterial;
 
-        // 그림자 설정도 원복
-        cell.castShadow = true;
-        cell.receiveShadow = true;
+        // 투명 셀 메시는 항상 그림자 없음
+        cell.castShadow = false;
+        cell.receiveShadow = false;
 
         if (cell.userData.contentMesh) {
           cell.userData.contentMesh.scale.set(1, 1, 1);
