@@ -2403,8 +2403,7 @@
         renderer.toneMappingExposure = 1.0;
 
         renderer.shadowMap.enabled = false; //초기에는 그림자 비활성화
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; //그림자 바닥 퀄리티 조정
-        //renderer.shadowMap.type = THREE.BasicShadowMap;
+        renderer.shadowMap.type = THREE.PCFShadowMap; //그림자 품질 기본값: 보통
         renderer.outputEncoding = THREE.sRGBEncoding;
 
         const container = document.getElementById('canvas-container');
@@ -2485,6 +2484,36 @@
 
         shadowToggle.checked = false; // 초기에는 그림자 비활성화
         shadowToggle.dispatchEvent(new Event('change'));
+
+        // 그림자 품질 설정 이벤트 핸들러
+        const shadowQualityRadios = document.querySelectorAll('input[name="shadowQuality"]');
+        shadowQualityRadios.forEach((radio) => {
+          radio.addEventListener('change', (e) => {
+            const quality = e.target.value;
+
+            // 그림자 맵 타입 변경
+            switch(quality) {
+              case 'low':
+                renderer.shadowMap.type = THREE.BasicShadowMap;
+                break;
+              case 'medium':
+                renderer.shadowMap.type = THREE.PCFShadowMap;
+                break;
+              case 'high':
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                break;
+            }
+
+            // 그림자 맵 업데이트 필요
+            renderer.shadowMap.needsUpdate = true;
+          });
+        });
+
+        // 초기 그림자 품질 설정 (보통)
+        const mediumQuality = document.getElementById('shadow-medium');
+        if (mediumQuality && mediumQuality.checked) {
+          renderer.shadowMap.type = THREE.PCFShadowMap;
+        }
 
         // 기본 바닥 템플릿이 없으면 생성
         if (
