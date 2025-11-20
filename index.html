@@ -2456,6 +2456,14 @@
               } else if (obj === floorMesh) {
                 obj.castShadow = false;
                 obj.receiveShadow = enabled;
+              } else if (obj.userData.isCell) {
+                // 투명 셀 메시 (상호작용용) - 그림자 없음
+                obj.castShadow = false;
+                obj.receiveShadow = false;
+              } else if (obj.userData.isCellContent) {
+                // 셀 내용물 (실제 박스) - 그림자만 캐스트
+                obj.castShadow = enabled;
+                obj.receiveShadow = false;
               } else {
                 // 기타 메시(파렛트 등)
                 obj.castShadow = enabled;
@@ -4526,6 +4534,7 @@
               const material = standardMaterials[col % standardMaterials.length];
               const boxMesh = new THREE.Mesh(boxGeometry, material);
               boxMesh.position.copy(cellMesh.position);
+              boxMesh.userData.isCellContent = true; // 셀 내용물 표시
               cellContainer.add(boxMesh);
               cellMesh.userData.contentMesh = boxMesh;
 
@@ -5398,6 +5407,7 @@
                   );
                   const boxMesh = new THREE.Mesh(boxGeom, mat);
                   boxMesh.position.copy(foundCell.position);
+                  boxMesh.userData.isCellContent = true; // 셀 내용물 표시
                   cellContainer.add(boxMesh);
                   foundCell.userData.contentMesh = boxMesh;
 
