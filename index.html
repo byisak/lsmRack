@@ -1168,100 +1168,104 @@
       <div class="space-y-4">
         <h4 class="text-lg font-bold text-white">랙 구성 설정</h4>
 
-        <div class="space-y-3">
-          <div class="space-y-1">
-            <label for="rack-id" class="block text-sm text-gray-300">랙 아이디</label>
+        <div class="space-y-2">
+          <!-- 랙 아이디 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">랙 아이디</span>
             <input
               id="rack-id"
               type="text"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
 
-          <div class="space-y-1">
-            <label for="rack-width" class="block text-sm text-gray-300">폭 (Width)</label>
+          <!-- 폭 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">폭</span>
             <input
               id="rack-width"
               type="number"
               value="5"
               step="0.1"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
 
-          <div class="space-y-1">
-            <label for="rack-depth" class="block text-sm text-gray-300">깊이 (Depth)</label>
+          <!-- 깊이 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">깊이</span>
             <input
               id="rack-depth"
               type="number"
               value="1.5"
               step="0.1"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
 
-          <div class="space-y-1">
-            <label for="rack-height" class="block text-sm text-gray-300">높이 (Height)</label>
+          <!-- 높이 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">높이</span>
             <input
               id="rack-height"
               type="number"
               value="5"
               step="0.1"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label for="rack-levels" class="block text-sm text-gray-300">단 수 (Levels)</label>
+          <!-- 단 수 · 셀 수 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">단·셀 수</span>
+            <div class="grid grid-cols-2 gap-1 flex-1">
               <input
                 id="rack-levels"
                 type="number"
                 value="5"
                 step="1"
-                class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder="단"
+                class="h-[24px] px-2 bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
               />
-            </div>
-            <div class="space-y-1">
-              <label for="rack-cells" class="block text-sm text-gray-300"
-                >셀 수 (Cells per level)</label
-              >
               <input
                 id="rack-cells"
                 type="number"
                 value="4"
                 step="1"
-                class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder="셀"
+                class="h-[24px] px-2 bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
               />
             </div>
           </div>
 
-          <div class="space-y-1">
-            <label for="rack-rotation" class="block text-sm text-gray-300"
-              >회전각도 (Rotation Angle)</label
-            >
-            <input
-              id="rack-rotation"
-              type="range"
-              min="-180"
-              max="180"
-              value="0"
-              step="5"
-              class="w-full"
-            />
-            <input
-              id="rack-rotation-num"
-              type="number"
-              min="-180"
-              max="180"
-              value="0"
-              step="5"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+          <!-- 회전각도 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">회전각도</span>
+            <div class="flex-1 space-y-1">
+              <input
+                id="rack-rotation"
+                type="range"
+                min="-180"
+                max="180"
+                value="0"
+                step="5"
+                class="w-full"
+              />
+              <input
+                id="rack-rotation-num"
+                type="number"
+                min="-180"
+                max="180"
+                value="0"
+                step="5"
+                class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+            </div>
           </div>
 
+          <!-- 템플릿 선택 -->
           <div class="space-y-1">
-            <label class="block text-sm text-gray-300">템플릿 선택</label>
+            <span class="block text-xs font-medium text-white">템플릿 선택</span>
             <div
               id="template-thumbnails"
               class="mt-2 flex flex-wrap gap-2 max-h-40 overflow-y-auto"
