@@ -2134,10 +2134,10 @@
               obj.receiveShadow = enabled;
             }
           });
-        });
 
-        shadowToggle.checked = true; // 기본 on 으로 시작하고 싶다면
-        shadowToggle.dispatchEvent(new Event('change'));
+          // 4) 그림자 맵 강제 업데이트
+          renderer.shadowMap.needsUpdate = true;
+        });
 
         // 기본 바닥 템플릿이 없으면 생성
         if (
@@ -2293,6 +2293,10 @@
             }
           }
         }
+
+        // 랙과 파렛트 로드 후 그림자 설정 초기화
+        shadowToggle.checked = true; // 기본 on 으로 시작
+        shadowToggle.dispatchEvent(new Event('change'));
 
         document.getElementById('edit-template').addEventListener('click', () => {
           showTemplateEditModal(selectedTemplateId);
