@@ -16,11 +16,10 @@
       referrerpolicy="no-referrer"
     />
 
-
     <!-- CSS 파일들 -->
-    <link rel="stylesheet" href="./css/base.css" />
-    <link rel="stylesheet" href="./css/components.css" />
-    <link rel="stylesheet" href="./css/layout.css" />
+    <link rel="stylesheet" href="./static/css/base.css" />
+    <link rel="stylesheet" href="./static/css/components.css" />
+    <link rel="stylesheet" href="./static/css/layout.css" />
   </head>
   <body class="font-MinSans">
     <!-- Three.js 렌더링 영역 -->
@@ -999,7 +998,12 @@
     >
       <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
         <h3 class="text-xl font-semibold text-white">템플릿 수정</h3>
-        <button id="template-modal-close" class="text-3xl text-gray-300 hover:text-white cursor-pointer transition-colors">×</button>
+        <button
+          id="template-modal-close"
+          class="text-3xl text-gray-300 hover:text-white cursor-pointer transition-colors"
+        >
+          ×
+        </button>
       </div>
       <div class="flex space-x-6">
         <div class="space-y-3 w-1/2">
@@ -1014,11 +1018,19 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-300 mb-1">기둥 색상</label>
-            <input id="edit-pillar-color" type="color" class="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer" />
+            <input
+              id="edit-pillar-color"
+              type="color"
+              class="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer"
+            />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-300 mb-1">선반 색상</label>
-            <input id="edit-shelf-color" type="color" class="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer" />
+            <input
+              id="edit-shelf-color"
+              type="color"
+              class="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer"
+            />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-300 mb-1">기둥 두께</label>
@@ -1043,31 +1055,59 @@
             />
           </div>
           <div class="flex items-center space-x-2">
-            <input id="edit-diagonal-supports" type="checkbox" class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500" />
+            <input
+              id="edit-diagonal-supports"
+              type="checkbox"
+              class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500"
+            />
             <label class="text-sm font-medium text-gray-300">대각선 보강재 사용</label>
           </div>
           <!-- 새로운 체크박스 추가 -->
           <div class="flex items-center space-x-2">
-            <input id="edit-shelf-plate" type="checkbox" class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500" />
+            <input
+              id="edit-shelf-plate"
+              type="checkbox"
+              class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500"
+            />
             <label class="text-sm font-medium text-gray-300">선반 위에 판 추가</label>
           </div>
           <div class="flex items-center space-x-2">
-            <input id="edit-top-plate" type="checkbox" class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500" />
+            <input
+              id="edit-top-plate"
+              type="checkbox"
+              class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500"
+            />
             <label class="text-sm font-medium text-gray-300">랙 상단에 판 추가</label>
           </div>
           <div class="pt-2">
-            <button id="add-new-template" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button
+              id="add-new-template"
+              class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
               새 템플릿 추가
             </button>
           </div>
         </div>
         <div class="w-1/2">
-          <canvas id="preview-canvas" class="w-full h-64 bg-gray-900 border border-gray-600 rounded-lg"></canvas>
+          <canvas
+            id="preview-canvas"
+            class="w-full h-64 bg-gray-900 border border-gray-600 rounded-lg"
+          ></canvas>
         </div>
       </div>
       <div class="flex justify-end mt-6 space-x-3">
-        <button id="save-template-changes" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">저장</button>
-        <button id="cancel-template-changes" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500">취소</button>
+        <button
+          id="save-template-changes"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          저장
+        </button>
+        <button
+          id="cancel-template-changes"
+          class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+        >
+          취소
+        </button>
       </div>
     </div>
 
@@ -1233,8 +1273,8 @@
         initRendererShadows,
         initShadowControls,
         applyCellHoverShadow,
-        resetCellHoverShadow
-      } from './js/shadows.js';
+        resetCellHoverShadow,
+      } from './static/js/shadows.js';
 
       window.onload = async function () {
         await init();
@@ -2000,7 +2040,13 @@
         loadDefaultSettings();
 
         // 그림자 컨트롤 초기화 (shadows.js 유틸리티 사용)
-        initShadowControls(renderer, scene, { mainLight, spotLight, fillLight, rimLight }, floorMesh, THREE);
+        initShadowControls(
+          renderer,
+          scene,
+          { mainLight, spotLight, fillLight, rimLight },
+          floorMesh,
+          THREE,
+        );
 
         // 초기 그림자 품질 설정 (보통)
         const mediumQuality = document.getElementById('shadow-medium');
@@ -5463,15 +5509,21 @@
         document.getElementById('edit-template-name').value = template.name;
 
         // 색상 처리: 숫자(0xff0000) 또는 문자열("#ff0000") 모두 처리
-        const pillarColor = typeof template.pillar.color === 'number'
-          ? template.pillar.color
-          : parseInt(template.pillar.color.replace('#', ''), 16);
-        const shelfColor = typeof template.shelf.color === 'number'
-          ? template.shelf.color
-          : parseInt(template.shelf.color.replace('#', ''), 16);
+        const pillarColor =
+          typeof template.pillar.color === 'number'
+            ? template.pillar.color
+            : parseInt(template.pillar.color.replace('#', ''), 16);
+        const shelfColor =
+          typeof template.shelf.color === 'number'
+            ? template.shelf.color
+            : parseInt(template.shelf.color.replace('#', ''), 16);
 
-        document.getElementById('edit-pillar-color').value = `#${pillarColor.toString(16).padStart(6, '0')}`;
-        document.getElementById('edit-shelf-color').value = `#${shelfColor.toString(16).padStart(6, '0')}`;
+        document.getElementById('edit-pillar-color').value = `#${pillarColor
+          .toString(16)
+          .padStart(6, '0')}`;
+        document.getElementById('edit-shelf-color').value = `#${shelfColor
+          .toString(16)
+          .padStart(6, '0')}`;
         document.getElementById('edit-pillar-thickness').value = template.pillar.thickness;
         document.getElementById('edit-shelf-thickness').value = template.shelf.thickness;
         document.getElementById('edit-diagonal-supports').checked = template.supports.diagonal;
@@ -5628,7 +5680,7 @@
           const pos = oldRack.position.clone();
           const rotation = oldRack.rotation.y;
           const config = oldRack.userData.config;
-          const preservedCells = oldRack.userData.cells;  // 셀 데이터 보존
+          const preservedCells = oldRack.userData.cells; // 셀 데이터 보존
           const preservedCellAddresses = oldRack.userData.cells.map((row, rowIdx) =>
             row.map((cell, colIdx) => `${rackId}-${String.fromCharCode(65 + rowIdx)}${colIdx + 1}`),
           );
@@ -5643,8 +5695,8 @@
             config.height,
             config.levels,
             config.cells,
-            preservedCells,  // 셀 데이터 전달
-            true,            // isNewRack
+            preservedCells, // 셀 데이터 전달
+            true, // isNewRack
             templateId,
           );
 
@@ -6312,11 +6364,19 @@
       const debouncedUpdatePreview = debounce(updatePreviewRack, 300); // 300ms 디바운스
 
       // 컬러피커와 다른 입력 필드에 이벤트 리스너 추가
-      document.getElementById('edit-pillar-color').addEventListener('input', debouncedUpdatePreview);
+      document
+        .getElementById('edit-pillar-color')
+        .addEventListener('input', debouncedUpdatePreview);
       document.getElementById('edit-shelf-color').addEventListener('input', debouncedUpdatePreview);
-      document.getElementById('edit-pillar-thickness').addEventListener('input', debouncedUpdatePreview);
-      document.getElementById('edit-shelf-thickness').addEventListener('input', debouncedUpdatePreview);
-      document.getElementById('edit-diagonal-supports').addEventListener('change', updatePreviewRack);
+      document
+        .getElementById('edit-pillar-thickness')
+        .addEventListener('input', debouncedUpdatePreview);
+      document
+        .getElementById('edit-shelf-thickness')
+        .addEventListener('input', debouncedUpdatePreview);
+      document
+        .getElementById('edit-diagonal-supports')
+        .addEventListener('change', updatePreviewRack);
       document.getElementById('edit-shelf-plate').addEventListener('change', updatePreviewRack);
       document.getElementById('edit-top-plate').addEventListener('change', updatePreviewRack);
 
