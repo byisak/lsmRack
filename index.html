@@ -1654,6 +1654,14 @@
 
       import * as THREE from 'three';
 
+      // 그림자 유틸리티 import
+      import {
+        initRendererShadows,
+        initShadowControls,
+        applyCellHoverShadow,
+        resetCellHoverShadow
+      } from './js/shadows.js';
+
       window.onload = async function () {
         await init();
       };
@@ -2385,8 +2393,8 @@
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.0;
 
-        renderer.shadowMap.enabled = false; //초기에는 그림자 비활성화
-        renderer.shadowMap.type = THREE.PCFShadowMap; //그림자 품질 기본값: 보통
+        // 그림자 초기화 (shadows.js 유틸리티 사용)
+        initRendererShadows(renderer, THREE);
         renderer.outputEncoding = THREE.sRGBEncoding;
 
         const container = document.getElementById('canvas-container');
@@ -2417,155 +2425,8 @@
         // 기본 설정 로드
         loadDefaultSettings();
 
-        const shadowToggle = document.getElementById('shadow-toggle');
-        const shadowQuality = document.getElementById('shadow-quality');
-
-        // 페이지 로드 시 상태 반영
-        shadowQuality.classList.toggle('hidden', !shadowToggle.checked);
-
-        // 토글 변경 시
-        shadowToggle.addEventListener('change', (e) => {
-          // shadow-toggle 체크된 경우 품질 설정 보이기, 아니면 숨기기
-          shadowQuality.classList.toggle('hidden', !e.target.checked);
-        });
-        shadowToggle.addEventListener('change', (e) => {
-          const enabled = e.target.checked;
-
-          // 1) 렌더러 자체의 그림자 활성화/비활성화
-          renderer.shadowMap.enabled = enabled;
-
-          // 2) 주요 라이트의 그림자 설정
-          mainLight.castShadow = enabled;
-          if (spotLight) spotLight.castShadow = enabled;
-          if (fillLight) fillLight.castShadow = enabled;
-          if (rimLight) rimLight.castShadow = enabled;
-
-          // 3) 씬의 모든 메시(mesh)에 대해 cast/receiveShadow 설정
-          scene.traverse((obj) => {
-            if (obj.isMesh) {
-              // 각 메시의 역할에 따라 적절하게 그림자 설정
-              if (obj.name === 'pillarStructure') {
-                obj.castShadow = enabled;
-                obj.receiveShadow = false;
-              } else if (obj.name === 'plateStructure') {
-                obj.castShadow = false;
-                obj.receiveShadow = enabled;
-              } else if (obj.name === 'shelfStructure') {
-                obj.castShadow = false;
-                obj.receiveShadow = enabled;
-              } else if (obj === floorMesh) {
-                obj.castShadow = false;
-                obj.receiveShadow = enabled;
-              } else if (obj.userData.isCell) {
-                // 투명 셀 메시 (상호작용용) - 그림자 없음
-                obj.castShadow = false;
-                obj.receiveShadow = false;
-              } else if (obj.userData.isCellContent) {
-                // 셀 내용물 (실제 박스) - 그림자만 캐스트
-                obj.castShadow = enabled;
-                obj.receiveShadow = false;
-              } else {
-                // 기타 메시(파렛트 등)
-                obj.castShadow = enabled;
-                obj.receiveShadow = enabled;
-              }
-            }
-          });
-        });
-
-        shadowToggle.checked = false; // 초기에는 그림자 비활성화
-        shadowToggle.dispatchEvent(new Event('change'));
-
-        // 그림자 품질 설정 이벤트 핸들러
-        const shadowQualityRadios = document.querySelectorAll('input[name="shadowQuality"]');
-        shadowQualityRadios.forEach((radio) => {
-          radio.addEventListener('change', (e) => {
-            const quality = e.target.value;
-            let mapSize = 2048; // 기본값
-
-            // 그림자 맵 타입 및 해상도 변경
-            switch(quality) {
-              case 'low':
-                renderer.shadowMap.type = THREE.BasicShadowMap;
-                mapSize = 1024;
-                break;
-              case 'medium':
-                renderer.shadowMap.type = THREE.PCFShadowMap;
-                mapSize = 2048;
-                break;
-              case 'high':
-                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                mapSize = 4096;
-                break;
-            }
-
-            // 모든 라이트의 그림자 맵 크기 변경
-            if (mainLight && mainLight.shadow) {
-              mainLight.shadow.mapSize.set(mapSize, mapSize);
-              mainLight.shadow.map?.dispose(); // 기존 그림자 맵 해제
-              mainLight.shadow.map = null;
-            }
-            if (spotLight && spotLight.shadow) {
-              spotLight.shadow.mapSize.set(mapSize, mapSize);
-              spotLight.shadow.map?.dispose();
-              spotLight.shadow.map = null;
-            }
-            if (fillLight && fillLight.shadow) {
-              fillLight.shadow.mapSize.set(mapSize, mapSize);
-              fillLight.shadow.map?.dispose();
-              fillLight.shadow.map = null;
-            }
-            if (rimLight && rimLight.shadow) {
-              rimLight.shadow.mapSize.set(mapSize, mapSize);
-              rimLight.shadow.map?.dispose();
-              rimLight.shadow.map = null;
-            }
-
-            // 그림자가 현재 활성화되어 있는 경우에만 재설정
-            const shadowToggle = document.getElementById('shadow-toggle');
-            if (shadowToggle && shadowToggle.checked) {
-              // 그림자를 잠깐 껐다가 다시 켜서 변경사항 즉시 반영
-              renderer.shadowMap.enabled = false;
-
-              // 다음 프레임에서 그림자 다시 활성화
-              setTimeout(() => {
-                renderer.shadowMap.enabled = true;
-                renderer.shadowMap.needsUpdate = true;
-
-                // 모든 메시의 그림자 설정 재적용
-                scene.traverse((obj) => {
-                  if (obj.isMesh) {
-                    if (obj.name === 'pillarStructure') {
-                      obj.castShadow = true;
-                      obj.receiveShadow = false;
-                    } else if (obj.name === 'plateStructure') {
-                      obj.castShadow = false;
-                      obj.receiveShadow = true;
-                    } else if (obj.name === 'shelfStructure') {
-                      obj.castShadow = false;
-                      obj.receiveShadow = false;
-                    } else if (obj === floorMesh) {
-                      obj.castShadow = false;
-                      obj.receiveShadow = true;
-                    } else {
-                      obj.castShadow = true;
-                      obj.receiveShadow = true;
-                    }
-                  }
-                });
-
-                // 라이트 그림자 재활성화
-                mainLight.castShadow = true;
-                if (spotLight) spotLight.castShadow = true;
-                if (fillLight) fillLight.castShadow = true;
-                if (rimLight) rimLight.castShadow = true;
-              }, 10);
-            } else {
-              // 그림자가 비활성화 상태면 needsUpdate만 설정
-              renderer.shadowMap.needsUpdate = true;
-            }
-          });
-        });
+        // 그림자 컨트롤 초기화 (shadows.js 유틸리티 사용)
+        initShadowControls(renderer, scene, { mainLight, spotLight, fillLight, rimLight }, floorMesh, THREE);
 
         // 초기 그림자 품질 설정 (보통)
         const mediumQuality = document.getElementById('shadow-medium');
@@ -4939,9 +4800,8 @@
       function applyCellHover(cell) {
         // hover용 머티리얼 적용
         cell.material = cell.userData.hoverMaterial;
-        // 투명 셀 메시는 항상 그림자 없음
-        cell.castShadow = false;
-        cell.receiveShadow = false;
+        // 그림자 설정 (shadows.js 유틸리티 사용)
+        applyCellHoverShadow(cell);
         // contentMesh도 살짝 키우기
         if (cell.userData.contentMesh) {
           cell.userData.contentMesh.scale.set(1.1, 1.1, 1.1);
@@ -4954,9 +4814,8 @@
         // 원래 머티리얼 복원
         cell.material = cell.userData.originalMaterial;
 
-        // 투명 셀 메시는 항상 그림자 없음
-        cell.castShadow = false;
-        cell.receiveShadow = false;
+        // 그림자 설정 복원 (shadows.js 유틸리티 사용)
+        resetCellHoverShadow(cell);
 
         if (cell.userData.contentMesh) {
           cell.userData.contentMesh.scale.set(1, 1, 1);
