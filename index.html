@@ -1276,6 +1276,15 @@
         resetCellHoverShadow,
       } from './static/js/shadows.js';
 
+      // 유틸리티 함수 import
+      import {
+        sanitizeInput,
+        debounce,
+        getWorldHalfExtents,
+        columnLetterToIndex,
+        validateRackConfig
+      } from './js/utils.js';
+
       window.onload = async function () {
         await init();
       };
