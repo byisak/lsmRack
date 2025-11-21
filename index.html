@@ -1282,8 +1282,8 @@
         debounce,
         getWorldHalfExtents,
         columnLetterToIndex,
-        validateRackConfig
-      } from './js/utils.js';
+        validateRackConfig,
+      } from './static/js/utils.js';
 
       window.onload = async function () {
         await init();
@@ -1314,39 +1314,6 @@
           alert('저장 공간이 부족합니다. 일부 데이터를 삭제해주세요.');
           return false;
         }
-      }
-
-      // 입력값 검증 함수 (XSS 방지)
-      function sanitizeInput(str) {
-        if (typeof str !== 'string') return '';
-        return str.replace(/[<>'"&]/g, function (char) {
-          const entities = {
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-            '&': '&amp;',
-          };
-          return entities[char] || char;
-        });
-      }
-
-      // localStorage 데이터 검증 함수
-      function validateRackConfig(config) {
-        return (
-          config &&
-          typeof config.rackId === 'string' &&
-          typeof config.width === 'number' &&
-          config.width > 0 &&
-          typeof config.depth === 'number' &&
-          config.depth > 0 &&
-          typeof config.height === 'number' &&
-          config.height > 0 &&
-          typeof config.levels === 'number' &&
-          config.levels > 0 &&
-          typeof config.cells === 'number' &&
-          config.cells > 0
-        );
       }
 
       // 전역 변수 선언
@@ -3051,22 +3018,6 @@
         }
       }
 
-      // ----------------------------------------------------
-      // 오브젝트의 월드 반치수(half‑extents)를 계산하는 헬퍼
-      // rack.userData.config.width, depth 와 rack.rotation.y 사용
-      // ----------------------------------------------------
-      function getWorldHalfExtents(rack) {
-        const w = rack.userData.config.width;
-        const d = rack.userData.config.depth;
-        const θ = rack.rotation.y; // Y축 회전 (라디안)
-        const hx = w / 2,
-          hz = d / 2;
-        // X축·Z축으로 투영된 반치수
-        const halfX = Math.abs(Math.cos(θ) * hx) + Math.abs(Math.sin(θ) * hz);
-        const halfZ = Math.abs(Math.sin(θ) * hx) + Math.abs(Math.cos(θ) * hz);
-        return { halfX, halfZ };
-      }
-
       // =======================================
       // 1) updateAlignmentHelpers
       //    – X/Z 면이 딱 붙는 순간에만 수직/수평 가이드
@@ -4750,22 +4701,7 @@
           input.addEventListener('input', debouncedUpdate); // 디바운싱된 리스너 추가
         });
 
-      function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-          const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-          };
-          clearTimeout(timeout);
-          timeout = setTimeout(later, wait);
-        };
-      }
 
-      // 문자 열(A/B/C/...) → 0-based 인덱스 변환 헬퍼
-      function columnLetterToIndex(letter) {
-        return letter.toUpperCase().charCodeAt(0) - 65;
-      }
 
       // 전역 변수로 rack.json 데이터를 캐싱
       let cachedRackData = null;
