@@ -16,437 +16,10 @@
       referrerpolicy="no-referrer"
     />
 
-    <style>
-      @font-face {
-        font-family: 'MinSans';
-        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/MinSans-Regular.woff')
-          format('woff');
-      }
-
-      .font-MinSans {
-        font-family: MinSans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
-          'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-      }
-      /* 캔버스, 로딩 화면, 툴팁 등 기본 스타일 */
-      #canvas-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
-      #loading-screen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        font-size: 20px;
-        z-index: 100;
-      }
-      .progress-bar {
-        width: 50%;
-        height: 10px;
-        background-color: #444;
-        border-radius: 5px;
-        margin-top: 20px;
-      }
-      .progress-bar-fill {
-        height: 100%;
-        background-color: #0088ff;
-        border-radius: 5px;
-        width: 0%;
-        transition: width 0.3s ease;
-      }
-      /* 모달 스타일 */
-      .modal {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        width: 600px;
-        max-width: 90%;
-        max-height: 90vh;
-        overflow: auto;
-        display: none; /* 초기 상태를 none으로 설정 */
-      }
-      #preview-canvas {
-        width: 100% !important;
-        height: 200px !important; /* 고정된 높이 */
-        max-width: 100%;
-        display: block;
-      }
-      /* 툴팁 스타일 - 세련된 다크 테마 */
-      .tooltip {
-        position: fixed;
-        background: rgba(31, 41, 55, 0.95); /* bg-gray-800/95 */
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        color: white;
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: 1px solid rgba(75, 85, 99, 0.5); /* border-gray-600/50 */
-        font-size: 13px;
-        line-height: 1.6;
-        pointer-events: none;
-        z-index: 100;
-        display: none;
-        min-width: 180px;
-        max-width: 280px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
-        animation: tooltipFadeIn 0.2s ease-out;
-      }
-
-      @keyframes tooltipFadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .tooltip-header {
-        font-weight: 600;
-        font-size: 14px;
-        color: #60a5fa; /* blue-400 */
-        margin-bottom: 8px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid rgba(75, 85, 99, 0.3);
-      }
-
-      .tooltip-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 4px 0;
-        font-size: 12px;
-      }
-
-      .tooltip-label {
-        color: #9ca3af; /* gray-400 */
-        font-weight: 500;
-      }
-
-      .tooltip-value {
-        color: #f3f4f6; /* gray-100 */
-        font-weight: 500;
-        text-align: right;
-      }
-
-      .tooltip-empty {
-        color: #6b7280; /* gray-500 */
-        font-style: italic;
-        text-align: center;
-        padding: 4px 0;
-      }
-      /* 툴박스 스타일 */
-      #rack-toolbar {
-        width: 200px;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-      }
-
-      .thumbnail {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border: 2px solid transparent;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: border-color 0.2s;
-      }
-      .thumbnail.selected {
-        border-color: #3b82f6; /* 선택된 썸네일 테두리 색상 */
-      }
-      .thumbnail:hover {
-        border-color: #93c5fd;
-      }
-      .distance-label {
-        font-size: 14px;
-        background: #ff8800;
-        border: 1px solid #ff8800;
-        color: #fff;
-        padding: 2px 4px;
-        border-radius: 4px;
-        pointer-events: auto;
-        cursor: pointer;
-      }
-      /* Chrome, Safari, Edge */
-      .distance-label input[type='number']::-webkit-outer-spin-button,
-      .distance-label input[type='number']::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-
-      /* Firefox */
-      .distance-label input[type='number'] {
-        -moz-appearance: textfield;
-        appearance: textfield;
-      }
-
-      /* ===== 그라디언트 검색 인풋 스타일 ===== */
-      .search-input-container {
-        position: relative;
-        width: 400px;
-      }
-
-      /* Gradient shadow effect */
-      .gradient-shadow {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        border-radius: 24px;
-        background: linear-gradient(45deg, #ff6ec4, #7873f5, #4fc3f7, #66bb6a, #ffca28, #ff6ec4);
-        background-size: 300% 300%;
-        opacity: 0;
-        filter: blur(20px);
-        transition: opacity 0.3s ease;
-        animation: gradientShift 3s ease infinite;
-        z-index: 0;
-      }
-
-      /* Gradient border wrapper */
-      .input-wrapper {
-        position: relative;
-        border-radius: 24px;
-        padding: 2px;
-        background: transparent; /* 기본 상태는 투명 */
-        transition: all 0.3s ease;
-      }
-
-      /* Show gradient border on focus */
-      .search-input-container:focus-within .input-wrapper {
-        background: linear-gradient(45deg, #ff6ec4, #7873f5, #4fc3f7, #66bb6a, #ffca28, #ff6ec4);
-        background-size: 300% 300%;
-        animation: gradientShift 3s ease infinite;
-      }
-
-      /* Show gradient shadow on focus */
-      .search-input-container:focus-within .gradient-shadow {
-        opacity: 0.4;
-      }
-
-      /* Search input field */
-      #search-input {
-        width: 100%;
-        padding: 14px 50px 14px 24px;
-        font-size: 15px;
-        border: none;
-        border-radius: 22px;
-        background: white;
-        outline: none;
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 1;
-      }
-
-      /* Default border when not focused */
-      .search-input-container:not(:focus-within) #search-input {
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 24px;
-      }
-
-      #search-input::placeholder {
-        color: #999;
-      }
-
-      /* Animation for gradient movement */
-      @keyframes gradientShift {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
-      }
-
-      /* Search button inside input */
-      #search-btn {
-        position: absolute;
-        right: 6px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 3;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        padding: 8px 16px;
-        border-radius: 18px;
-        color: white;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-      }
-
-      #search-btn:hover {
-        transform: translateY(-50%) scale(1.05);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
-      }
-
-      #search-btn:active {
-        transform: translateY(-50%) scale(0.98);
-      }
-
-      /* Loading spinner */
-      .search-loading-icon {
-        position: absolute;
-        right: 80px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 3;
-        width: 18px;
-        height: 18px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        pointer-events: none;
-      }
-
-      .search-input-container:focus-within .search-loading-icon {
-        opacity: 1;
-      }
-
-      .search-spinner {
-        width: 18px;
-        height: 18px;
-        border: 2px solid transparent;
-        border-top-color: #7873f5;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* 브라우저 기본 드롭다운 마커 감추기 */
-      #rack-tree summary::-webkit-details-marker {
-        display: none;
-      }
-      #rack-tree summary::marker {
-        display: none;
-      }
-      #left-panel {
-        max-height: calc(100vh - 2rem);
-        overflow-y: auto;
-        overflow-x: hidden;
-      }
-
-      /* Webkit 기반 브라우저 */
-      #left-panel::-webkit-scrollbar {
-        width: 6px;
-      }
-      #left-panel::-webkit-scrollbar-track {
-        background: #374151; /* gray-700 */
-        border-radius: 3px;
-      }
-      #left-panel::-webkit-scrollbar-thumb {
-        background-color: #4b5563; /* gray-600 */
-        border-radius: 3px;
-      }
-
-      /* Firefox */
-      #left-panel {
-        scrollbar-width: thin;
-        scrollbar-color: #4b5563 #374151;
-      }
-      /*
-      #rack-tree summary {
-        caret-color: transparent;
-      }
-        */
-
-      /* 1) h4, label 등 포커스 가능한 텍스트 요소에 대해 */
-      h4:focus,
-      label:focus {
-        outline: none; /* 포커스 테두리 제거 */
-        caret-color: transparent !important; /* 깜박이는 커서(캐럿) 숨기기 */
-      }
-
-      /* 2) 추가로, 스팬·단락 등 다른 텍스트에도 동일하게 적용하고 싶다면 */
-      h1:focus,
-      h2:focus,
-      h3:focus,
-      p:focus,
-      span:focus,
-      ul:focus,
-      li:focus {
-        outline: none;
-        caret-color: transparent !important;
-      }
-
-      /* 3) 클릭만으로 포커스가 가지 않게 하고 싶으면 user-select: none 도 함께 */
-      h4,
-      label {
-        user-select: none;
-      }
-      /* number input 스피너 제거 */
-      input[type='number']::-webkit-outer-spin-button,
-      input[type='number']::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      input[type='number'] {
-        -moz-appearance: textfield;
-        appearance: textfield;
-      }
-      /* 공통 슬라이더 스타일 */
-      .slider {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 100%;
-        height: 24px;
-        border-radius: 8px;
-        background: linear-gradient(
-          to right,
-          #3b82f6 0%,
-          #3b82f6 var(--percent),
-          #4a4a4a var(--percent),
-          #4a4a4a 100%
-        );
-        outline: none;
-        cursor: pointer;
-      }
-      .slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 12px;
-        height: 24px;
-        border-radius: 6px;
-        background: #848484;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-      }
-      .slider::-moz-range-thumb {
-        width: 12px;
-        height: 24px;
-        border-radius: 6px;
-        background: #848484;
-        border: none;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-      }
-      .floor-anchor button {
-        transition: background-color 0.2s;
-      }
-      .floor-anchor button.selected {
-        background-color: #f59e0b; /* 방향 선택 강조 색 */
-      }
-    </style>
+    <!-- CSS 파일들 -->
+    <link rel="stylesheet" href="./static/css/base.css" />
+    <link rel="stylesheet" href="./static/css/components.css" />
+    <link rel="stylesheet" href="./static/css/layout.css" />
   </head>
   <body class="font-MinSans">
     <!-- Three.js 렌더링 영역 -->
@@ -1168,100 +741,104 @@
       <div class="space-y-4">
         <h4 class="text-lg font-bold text-white">랙 구성 설정</h4>
 
-        <div class="space-y-3">
-          <div class="space-y-1">
-            <label for="rack-id" class="block text-sm text-gray-300">랙 아이디</label>
+        <div class="space-y-2">
+          <!-- 랙 아이디 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">랙 아이디</span>
             <input
               id="rack-id"
               type="text"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
 
-          <div class="space-y-1">
-            <label for="rack-width" class="block text-sm text-gray-300">폭 (Width)</label>
+          <!-- 폭 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">폭</span>
             <input
               id="rack-width"
               type="number"
               value="5"
               step="0.1"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
 
-          <div class="space-y-1">
-            <label for="rack-depth" class="block text-sm text-gray-300">깊이 (Depth)</label>
+          <!-- 깊이 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">깊이</span>
             <input
               id="rack-depth"
               type="number"
               value="1.5"
               step="0.1"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
 
-          <div class="space-y-1">
-            <label for="rack-height" class="block text-sm text-gray-300">높이 (Height)</label>
+          <!-- 높이 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">높이</span>
             <input
               id="rack-height"
               type="number"
               value="5"
               step="0.1"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label for="rack-levels" class="block text-sm text-gray-300">단 수 (Levels)</label>
+          <!-- 단 수 · 셀 수 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">단·셀 수</span>
+            <div class="grid grid-cols-2 gap-1 flex-1">
               <input
                 id="rack-levels"
                 type="number"
                 value="5"
                 step="1"
-                class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder="단"
+                class="h-[24px] px-2 bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
               />
-            </div>
-            <div class="space-y-1">
-              <label for="rack-cells" class="block text-sm text-gray-300"
-                >셀 수 (Cells per level)</label
-              >
               <input
                 id="rack-cells"
                 type="number"
                 value="4"
                 step="1"
-                class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder="셀"
+                class="h-[24px] px-2 bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
               />
             </div>
           </div>
 
-          <div class="space-y-1">
-            <label for="rack-rotation" class="block text-sm text-gray-300"
-              >회전각도 (Rotation Angle)</label
-            >
-            <input
-              id="rack-rotation"
-              type="range"
-              min="-180"
-              max="180"
-              value="0"
-              step="5"
-              class="w-full"
-            />
-            <input
-              id="rack-rotation-num"
-              type="number"
-              min="-180"
-              max="180"
-              value="0"
-              step="5"
-              class="w-full h-10 px-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+          <!-- 회전각도 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs w-20 font-medium text-white whitespace-nowrap">회전각도</span>
+            <div class="flex-1 space-y-1">
+              <input
+                id="rack-rotation"
+                type="range"
+                min="-180"
+                max="180"
+                value="0"
+                step="5"
+                class="w-full"
+              />
+              <input
+                id="rack-rotation-num"
+                type="number"
+                min="-180"
+                max="180"
+                value="0"
+                step="5"
+                class="h-[24px] px-2 w-full bg-gray-700 text-white text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+            </div>
           </div>
 
+          <!-- 템플릿 선택 -->
           <div class="space-y-1">
-            <label class="block text-sm text-gray-300">템플릿 선택</label>
+            <span class="block text-xs font-medium text-white">템플릿 선택</span>
             <div
               id="template-thumbnails"
               class="mt-2 flex flex-wrap gap-2 max-h-40 overflow-y-auto"
@@ -1416,80 +993,121 @@
     <!-- 템플릿 편집 모달 추가 -->
     <div
       id="template-edit-modal"
-      class="modal bg-white/30 backdrop-blur-xl p-4 outline outline-gray-950/5 rounded-lg text-black z-50"
+      class="modal bg-gray-800/90 backdrop-blur-md border border-gray-700 rounded-2xl shadow-xl p-6 text-white z-50"
       style="display: none"
     >
-      <div class="flex justify-between items-center border-b pb-2 mb-3">
-        <h3 class="text-lg font-bold">템플릿 수정</h3>
-        <button id="template-modal-close" class="text-2xl cursor-pointer">×</button>
+      <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
+        <h3 class="text-xl font-semibold text-white">템플릿 수정</h3>
+        <button
+          id="template-modal-close"
+          class="text-3xl text-gray-300 hover:text-white cursor-pointer transition-colors"
+        >
+          ×
+        </button>
       </div>
-      <div class="flex space-x-4">
-        <div class="space-y-2 w-1/2">
+      <div class="flex space-x-6">
+        <div class="space-y-3 w-1/2">
           <!-- 기존 입력 필드 유지 -->
           <div>
-            <label class="block text-sm">템플릿 이름</label>
+            <label class="block text-sm font-medium text-gray-300 mb-1">템플릿 이름</label>
             <input
               id="edit-template-name"
               type="text"
-              class="w-full p-1 rounded text-black outline outline-gray-200"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label class="block text-sm">기둥 색상</label>
-            <input id="edit-pillar-color" type="color" class="w-full p-1 rounded" />
+            <label class="block text-sm font-medium text-gray-300 mb-1">기둥 색상</label>
+            <input
+              id="edit-pillar-color"
+              type="color"
+              class="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer"
+            />
           </div>
           <div>
-            <label class="block text-sm">선반 색상</label>
-            <input id="edit-shelf-color" type="color" class="w-full p-1 rounded" />
+            <label class="block text-sm font-medium text-gray-300 mb-1">선반 색상</label>
+            <input
+              id="edit-shelf-color"
+              type="color"
+              class="w-full h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer"
+            />
           </div>
           <div>
-            <label class="block text-sm">기둥 두께</label>
+            <label class="block text-sm font-medium text-gray-300 mb-1">기둥 두께</label>
             <input
               id="edit-pillar-thickness"
               type="number"
               step="0.01"
               min="0.05"
               max="0.5"
-              class="w-full p-1 rounded text-black outline outline-gray-200"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label class="block text-sm">선반 두께</label>
+            <label class="block text-sm font-medium text-gray-300 mb-1">선반 두께</label>
             <input
               id="edit-shelf-thickness"
               type="number"
               step="0.01"
               min="0.05"
               max="0.5"
-              class="w-full p-1 rounded text-black outline outline-gray-200"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <div>
-            <label class="block text-sm">대각선 보강재 사용</label>
-            <input id="edit-diagonal-supports" type="checkbox" class="mt-1" />
+          <div class="flex items-center space-x-2">
+            <input
+              id="edit-diagonal-supports"
+              type="checkbox"
+              class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500"
+            />
+            <label class="text-sm font-medium text-gray-300">대각선 보강재 사용</label>
           </div>
           <!-- 새로운 체크박스 추가 -->
-          <div>
-            <label class="block text-sm">선반 위에 판 추가</label>
-            <input id="edit-shelf-plate" type="checkbox" class="mt-1" />
+          <div class="flex items-center space-x-2">
+            <input
+              id="edit-shelf-plate"
+              type="checkbox"
+              class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500"
+            />
+            <label class="text-sm font-medium text-gray-300">선반 위에 판 추가</label>
           </div>
-          <div>
-            <label class="block text-sm">랙 상단에 판 추가</label>
-            <input id="edit-top-plate" type="checkbox" class="mt-1" />
+          <div class="flex items-center space-x-2">
+            <input
+              id="edit-top-plate"
+              type="checkbox"
+              class="w-4 h-4 bg-gray-700 border-gray-600 rounded text-blue-500 focus:ring-2 focus:ring-blue-500"
+            />
+            <label class="text-sm font-medium text-gray-300">랙 상단에 판 추가</label>
           </div>
-          <div>
-            <button id="add-new-template" class="w-full bg-green-500 py-1 rounded">
+          <div class="pt-2">
+            <button
+              id="add-new-template"
+              class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
               새 템플릿 추가
             </button>
           </div>
         </div>
         <div class="w-1/2">
-          <canvas id="preview-canvas" class="w-full h-64 border border-gray-300 rounded"></canvas>
+          <canvas
+            id="preview-canvas"
+            class="w-full h-64 bg-gray-900 border border-gray-600 rounded-lg"
+          ></canvas>
         </div>
       </div>
-      <div class="flex justify-end mt-4 space-x-2">
-        <button id="save-template-changes" class="bg-blue-500 py-1 px-3 rounded">저장</button>
-        <button id="cancel-template-changes" class="bg-gray-500 py-1 px-3 rounded">취소</button>
+      <div class="flex justify-end mt-6 space-x-3">
+        <button
+          id="save-template-changes"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          저장
+        </button>
+        <button
+          id="cancel-template-changes"
+          class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+        >
+          취소
+        </button>
       </div>
     </div>
 
@@ -1650,6 +1268,23 @@
 
       import * as THREE from 'three';
 
+      // 그림자 유틸리티 import
+      import {
+        initRendererShadows,
+        initShadowControls,
+        applyCellHoverShadow,
+        resetCellHoverShadow,
+      } from './static/js/shadows.js';
+
+      // 유틸리티 함수 import
+      import {
+        sanitizeInput,
+        debounce,
+        getWorldHalfExtents,
+        columnLetterToIndex,
+        validateRackConfig,
+      } from './static/js/utils.js';
+
       window.onload = async function () {
         await init();
       };
@@ -1679,39 +1314,6 @@
           alert('저장 공간이 부족합니다. 일부 데이터를 삭제해주세요.');
           return false;
         }
-      }
-
-      // 입력값 검증 함수 (XSS 방지)
-      function sanitizeInput(str) {
-        if (typeof str !== 'string') return '';
-        return str.replace(/[<>'"&]/g, function (char) {
-          const entities = {
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;',
-            '&': '&amp;',
-          };
-          return entities[char] || char;
-        });
-      }
-
-      // localStorage 데이터 검증 함수
-      function validateRackConfig(config) {
-        return (
-          config &&
-          typeof config.rackId === 'string' &&
-          typeof config.width === 'number' &&
-          config.width > 0 &&
-          typeof config.depth === 'number' &&
-          config.depth > 0 &&
-          typeof config.height === 'number' &&
-          config.height > 0 &&
-          typeof config.levels === 'number' &&
-          config.levels > 0 &&
-          typeof config.cells === 'number' &&
-          config.cells > 0
-        );
       }
 
       // 전역 변수 선언
@@ -1801,18 +1403,6 @@
         btn.textContent = `편집 모드 (${enabled ? 'ON' : 'OFF'})`;
         btn.classList.toggle('bg-green-500', enabled);
         btn.classList.toggle('bg-gray-600', !enabled);
-
-        // ===== 성능에 가장 큰 영향을 주는 부분만 토글 =====
-        renderer.shadowMap.enabled = !enabled; // 뷰어 모드: 그림자 OFF → FPS 2~3배 상승
-        renderer.shadowMap.needsUpdate = true;
-
-        // 모든 메쉬 그림자 일괄 토글 (한 번만 돌리면 됨)
-        scene.traverse((obj) => {
-          if (obj.isMesh) {
-            obj.castShadow = !enabled;
-            obj.receiveShadow = !enabled;
-          }
-        });
 
         // 편집 전용 헬퍼들
         const editHelpers = [gridHelper, axesHelper, ...alignmentHelpers];
@@ -2035,20 +1625,6 @@
           };
         }
 
-        // yellowPallet 템플릿이 없는 경우 추가
-        if (!rackTemplates.hasOwnProperty('yellowPallet')) {
-          rackTemplates['yellowPallet'] = {
-            name: '노란 파렛트 템플릿',
-            pillar: { color: 0x001cff, metalness: 0.4, roughness: 0.4, thickness: 0.1 },
-            shelf: { color: 0xffe300, metalness: 0.2, roughness: 0.6, thickness: 0.1 },
-            supports: { enabled: true, diagonal: true },
-            shelfPlate: false,
-            topPlate: false,
-            // dimensions: { width: 5, depth: 1.5, height: 5, levels: 5, cells: 4 },
-            includePallet: true,
-          };
-        }
-
         // 변경된 템플릿을 로컬스토리지에 다시 저장
         localStorage.setItem('rackTemplates', JSON.stringify(rackTemplates));
       }
@@ -2081,7 +1657,7 @@
       function initPreviewCanvas() {
         const canvas = document.getElementById('preview-canvas');
         previewScene = new THREE.Scene();
-        previewScene.background = new THREE.Color(0xdddddd);
+        previewScene.background = new THREE.Color(0x1f2937); // 다크 그레이 배경
 
         previewCamera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 0.1, 1000);
         previewCamera.position.set(5, 5, 5);
@@ -2089,21 +1665,26 @@
 
         previewRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         previewRenderer.setSize(canvas.width, canvas.height);
-        previewRenderer.shadowMap.enabled = true;
+        previewRenderer.shadowMap.enabled = false; // 미리보기에서는 그림자 비활성화로 성능 향상
 
-        // 조명 강도 조정
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // 강도를 0.5에서 0.8로 증가
+        // 조명 강도 대폭 증가 (색상이 더 밝게 보이도록)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2.5); // 강도를 0.8에서 2.5로 대폭 증가
         previewScene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0); // 강도를 0.5에서 1.0으로 증가
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.0); // 강도를 1.0에서 2.0으로 증가
         directionalLight.position.set(5, 5, 5);
-        directionalLight.castShadow = true;
+        directionalLight.castShadow = false; // 그림자 비활성화
         previewScene.add(directionalLight);
 
-        // 추가 조명: PointLight 삽입
-        const pointLight = new THREE.PointLight(0xffffff, 0.5, 100); // 강도 1.0, 거리 50
+        // 추가 조명: PointLight 삽입 (더 밝게)
+        const pointLight = new THREE.PointLight(0xffffff, 1.5, 100); // 강도 0.5에서 1.5로 증가
         pointLight.position.set(0, 5, 0); // 랙 상단에 위치
         previewScene.add(pointLight);
+
+        // 반대편에서도 조명 추가 (균일한 밝기)
+        const fillLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        fillLight.position.set(-5, 3, -5);
+        previewScene.add(fillLight);
 
         // OrbitControls 추가
         previewControls = new OrbitControls(previewCamera, previewRenderer.domElement);
@@ -2402,9 +1983,8 @@
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.0;
 
-        renderer.shadowMap.enabled = true; //랙의 그림자가 바닥에 비치게
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; //그림자 바닥 퀄리티 조정
-        //renderer.shadowMap.type = THREE.BasicShadowMap;
+        // 그림자 초기화 (shadows.js 유틸리티 사용)
+        initRendererShadows(renderer, THREE);
         renderer.outputEncoding = THREE.sRGBEncoding;
 
         const container = document.getElementById('canvas-container');
@@ -2435,40 +2015,20 @@
         // 기본 설정 로드
         loadDefaultSettings();
 
-        const shadowToggle = document.getElementById('shadow-toggle');
-        const shadowQuality = document.getElementById('shadow-quality');
+        // 그림자 컨트롤 초기화 (shadows.js 유틸리티 사용)
+        initShadowControls(
+          renderer,
+          scene,
+          { mainLight, spotLight, fillLight, rimLight },
+          floorMesh,
+          THREE,
+        );
 
-        // 페이지 로드 시 상태 반영
-        shadowQuality.classList.toggle('hidden', !shadowToggle.checked);
-
-        // 토글 변경 시
-        shadowToggle.addEventListener('change', (e) => {
-          // shadow-toggle 체크된 경우 품질 설정 보이기, 아니면 숨기기
-          shadowQuality.classList.toggle('hidden', !e.target.checked);
-        });
-        shadowToggle.addEventListener('change', (e) => {
-          const enabled = e.target.checked;
-
-          // 1) 렌더러 자체의 그림자 활성화/비활성화
-          renderer.shadowMap.enabled = enabled;
-
-          // 2) 주요 라이트의 그림자 설정
-          mainLight.castShadow = enabled;
-          if (spotLight) spotLight.castShadow = enabled;
-          if (fillLight) fillLight.castShadow = enabled;
-          if (rimLight) rimLight.castShadow = enabled;
-
-          // 3) 씬의 모든 메시(mesh)에 대해 cast/receiveShadow 설정
-          scene.traverse((obj) => {
-            if (obj.isMesh) {
-              obj.castShadow = enabled;
-              obj.receiveShadow = enabled;
-            }
-          });
-        });
-
-        shadowToggle.checked = true; // 기본 on 으로 시작하고 싶다면
-        shadowToggle.dispatchEvent(new Event('change'));
+        // 초기 그림자 품질 설정 (보통)
+        const mediumQuality = document.getElementById('shadow-medium');
+        if (mediumQuality && mediumQuality.checked) {
+          renderer.shadowMap.type = THREE.PCFShadowMap;
+        }
 
         // 기본 바닥 템플릿이 없으면 생성
         if (
@@ -3458,22 +3018,6 @@
         }
       }
 
-      // ----------------------------------------------------
-      // 오브젝트의 월드 반치수(half‑extents)를 계산하는 헬퍼
-      // rack.userData.config.width, depth 와 rack.rotation.y 사용
-      // ----------------------------------------------------
-      function getWorldHalfExtents(rack) {
-        const w = rack.userData.config.width;
-        const d = rack.userData.config.depth;
-        const θ = rack.rotation.y; // Y축 회전 (라디안)
-        const hx = w / 2,
-          hz = d / 2;
-        // X축·Z축으로 투영된 반치수
-        const halfX = Math.abs(Math.cos(θ) * hx) + Math.abs(Math.sin(θ) * hz);
-        const halfZ = Math.abs(Math.sin(θ) * hx) + Math.abs(Math.cos(θ) * hz);
-        return { halfX, halfZ };
-      }
-
       // =======================================
       // 1) updateAlignmentHelpers
       //    – X/Z 면이 딱 붙는 순간에만 수직/수평 가이드
@@ -3818,8 +3362,8 @@
 
         const floor = new THREE.Mesh(geometry, material);
         floor.position.y = thickness / 2; // 바닥의 중심을 기준으로 Y 위치 조정 (Y 위치는 항상 0 기준)
-        floor.receiveShadow = true;
-        floor.castShadow = true; // 바닥이 그림자를 생성하도록 설정
+        floor.receiveShadow = renderer.shadowMap.enabled;
+        floor.castShadow = false; // 바닥은 그림자를 드리우지 않음
         scene.add(floor);
 
         // 편집 모드일 경우 격자 추가
@@ -4025,10 +3569,10 @@
             opacity: 0.5,
           }),
           standard: [
-            new THREE.MeshStandardMaterial({ color: 0xaa3333, metalness: 0.2, roughness: 0.8 }),
-            new THREE.MeshStandardMaterial({ color: 0x3333aa, metalness: 0.2, roughness: 0.8 }),
-            new THREE.MeshStandardMaterial({ color: 0x33aa33, metalness: 0.2, roughness: 0.8 }),
-            new THREE.MeshStandardMaterial({ color: 0xaaaa33, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0xffff00, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0xffff00, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0xffff00, metalness: 0.2, roughness: 0.8 }),
+            new THREE.MeshStandardMaterial({ color: 0xffff00, metalness: 0.2, roughness: 0.8 }),
           ],
         };
 
@@ -4187,8 +3731,9 @@
         // Pillar 구조물 병합 및 mesh 생성
         const mergedPillarGeometry = mergeGeometries(pillarGeometries);
         const pillarStructureMesh = new THREE.Mesh(mergedPillarGeometry, pillarMat);
+        pillarStructureMesh.name = 'pillarStructure'; // 그림자 설정을 위한 이름 지정
         // Shadow 최적화: 병합된 pillar 구조물은 그림자 드리움
-        pillarStructureMesh.castShadow = true;
+        pillarStructureMesh.castShadow = renderer.shadowMap.enabled;
         pillarStructureMesh.receiveShadow = false;
         rackStructureGroup.add(pillarStructureMesh);
 
@@ -4272,6 +3817,7 @@
         if (shelfGeometries.length > 0) {
           const mergedShelfGeometry = mergeGeometries(shelfGeometries);
           const shelfStructureMesh = new THREE.Mesh(mergedShelfGeometry, shelfMat);
+          shelfStructureMesh.name = 'shelfStructure'; // 그림자 설정을 위한 이름 지정
           // Shadow 최적화: 선반 구조물은 그림자 끔
           shelfStructureMesh.castShadow = false;
           shelfStructureMesh.receiveShadow = false;
@@ -4282,9 +3828,10 @@
         if (plateGeometries.length > 0) {
           const mergedPlateGeometry = mergeGeometries(plateGeometries);
           const plateStructureMesh = new THREE.Mesh(mergedPlateGeometry, plateMat);
+          plateStructureMesh.name = 'plateStructure'; // 그림자 설정을 위한 이름 지정
           // Shadow 최적화: 판은 그림자 받기만 (받는 표면)
           plateStructureMesh.castShadow = false;
-          plateStructureMesh.receiveShadow = true;
+          plateStructureMesh.receiveShadow = renderer.shadowMap.enabled;
           rackStructureGroup.add(plateStructureMesh);
         }
 
@@ -4347,9 +3894,9 @@
         // (랙 바닥이 0에 맞춰지므로, 파렛트 두께의 절반만큼)
         palletMesh.position.set(0, palletHeight / 2, 0);
 
-        // 그림자 옵션
-        palletMesh.castShadow = true;
-        palletMesh.receiveShadow = true;
+        // 그림자 옵션 (renderer 상태에 따라 설정)
+        palletMesh.castShadow = renderer.shadowMap.enabled;
+        palletMesh.receiveShadow = renderer.shadowMap.enabled;
 
         return palletMesh;
       }
@@ -4428,6 +3975,7 @@
               const material = standardMaterials[col % standardMaterials.length];
               const boxMesh = new THREE.Mesh(boxGeometry, material);
               boxMesh.position.copy(cellMesh.position);
+              boxMesh.userData.isCellContent = true; // 셀 내용물 표시
               cellContainer.add(boxMesh);
               cellMesh.userData.contentMesh = boxMesh;
 
@@ -4832,14 +4380,8 @@
       function applyCellHover(cell) {
         // hover용 머티리얼 적용
         cell.material = cell.userData.hoverMaterial;
-        if (!cell.userData.cellData.hasMaterial) {
-          cell.castShadow = false;
-          cell.receiveShadow = false;
-        } else {
-          // 물건 있는 셀은 기존 그림자 설정 유지
-          cell.castShadow = true;
-          cell.receiveShadow = true;
-        }
+        // 그림자 설정 (shadows.js 유틸리티 사용)
+        applyCellHoverShadow(cell);
         // contentMesh도 살짝 키우기
         if (cell.userData.contentMesh) {
           cell.userData.contentMesh.scale.set(1.1, 1.1, 1.1);
@@ -4852,9 +4394,8 @@
         // 원래 머티리얼 복원
         cell.material = cell.userData.originalMaterial;
 
-        // 그림자 설정도 원복
-        cell.castShadow = true;
-        cell.receiveShadow = true;
+        // 그림자 설정 복원 (shadows.js 유틸리티 사용)
+        resetCellHoverShadow(cell);
 
         if (cell.userData.contentMesh) {
           cell.userData.contentMesh.scale.set(1, 1, 1);
@@ -5160,22 +4701,7 @@
           input.addEventListener('input', debouncedUpdate); // 디바운싱된 리스너 추가
         });
 
-      function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-          const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-          };
-          clearTimeout(timeout);
-          timeout = setTimeout(later, wait);
-        };
-      }
 
-      // 문자 열(A/B/C/...) → 0-based 인덱스 변환 헬퍼
-      function columnLetterToIndex(letter) {
-        return letter.toUpperCase().charCodeAt(0) - 65;
-      }
 
       // 전역 변수로 rack.json 데이터를 캐싱
       let cachedRackData = null;
@@ -5300,6 +4826,7 @@
                   );
                   const boxMesh = new THREE.Mesh(boxGeom, mat);
                   boxMesh.position.copy(foundCell.position);
+                  boxMesh.userData.isCellContent = true; // 셀 내용물 표시
                   cellContainer.add(boxMesh);
                   foundCell.userData.contentMesh = boxMesh;
 
@@ -5925,10 +5452,21 @@
 
         const modal = document.getElementById('template-edit-modal');
         document.getElementById('edit-template-name').value = template.name;
-        document.getElementById('edit-pillar-color').value = `#${template.pillar.color
+
+        // 색상 처리: 숫자(0xff0000) 또는 문자열("#ff0000") 모두 처리
+        const pillarColor =
+          typeof template.pillar.color === 'number'
+            ? template.pillar.color
+            : parseInt(template.pillar.color.replace('#', ''), 16);
+        const shelfColor =
+          typeof template.shelf.color === 'number'
+            ? template.shelf.color
+            : parseInt(template.shelf.color.replace('#', ''), 16);
+
+        document.getElementById('edit-pillar-color').value = `#${pillarColor
           .toString(16)
           .padStart(6, '0')}`;
-        document.getElementById('edit-shelf-color').value = `#${template.shelf.color
+        document.getElementById('edit-shelf-color').value = `#${shelfColor
           .toString(16)
           .padStart(6, '0')}`;
         document.getElementById('edit-pillar-thickness').value = template.pillar.thickness;
@@ -5971,6 +5509,11 @@
 
         const pillarColorHex = document.getElementById('edit-pillar-color').value; // "#rrggbb"
         const shelfColorHex = document.getElementById('edit-shelf-color').value; // "#rrggbb"
+
+        // Hex 문자열을 숫자로 변환 (일관성 유지)
+        const pillarColor = parseInt(pillarColorHex.replace('#', ''), 16);
+        const shelfColor = parseInt(shelfColorHex.replace('#', ''), 16);
+
         const pillarThickness =
           parseFloat(document.getElementById('edit-pillar-thickness').value) || 0.1;
         const shelfThickness =
@@ -5983,13 +5526,13 @@
         rackTemplates[templateId] = {
           name,
           pillar: {
-            color: pillarColorHex,
+            color: pillarColor, // 숫자로 저장
             metalness: 0.4,
             roughness: 0.4,
             thickness: Math.max(0.05, Math.min(0.5, pillarThickness)),
           },
           shelf: {
-            color: shelfColorHex,
+            color: shelfColor, // 숫자로 저장
             metalness: 0.2,
             roughness: 0.6,
             thickness: Math.max(0.05, Math.min(0.5, shelfThickness)),
@@ -6023,8 +5566,13 @@
           return;
         }
 
-        const pillarColorHex = document.getElementById('edit-pillar-color').value;
-        const shelfColorHex = document.getElementById('edit-shelf-color').value;
+        const pillarColorHex = document.getElementById('edit-pillar-color').value; // "#rrggbb"
+        const shelfColorHex = document.getElementById('edit-shelf-color').value; // "#rrggbb"
+
+        // Hex 문자열을 숫자로 변환 (일관성 유지)
+        const pillarColor = parseInt(pillarColorHex.replace('#', ''), 16);
+        const shelfColor = parseInt(shelfColorHex.replace('#', ''), 16);
+
         const pillarThickness =
           parseFloat(document.getElementById('edit-pillar-thickness').value) || 0.1;
         const shelfThickness =
@@ -6038,12 +5586,12 @@
           name,
           pillar: {
             ...rackTemplates[templateId].pillar,
-            color: pillarColorHex,
+            color: pillarColor, // 숫자로 저장
             thickness: Math.max(0.05, Math.min(0.5, pillarThickness)),
           },
           shelf: {
             ...rackTemplates[templateId].shelf,
-            color: shelfColorHex,
+            color: shelfColor, // 숫자로 저장
             thickness: Math.max(0.05, Math.min(0.5, shelfThickness)),
           },
           supports: { ...rackTemplates[templateId].supports, diagonal: diagonalSupports },
@@ -6077,6 +5625,7 @@
           const pos = oldRack.position.clone();
           const rotation = oldRack.rotation.y;
           const config = oldRack.userData.config;
+          const preservedCells = oldRack.userData.cells; // 셀 데이터 보존
           const preservedCellAddresses = oldRack.userData.cells.map((row, rowIdx) =>
             row.map((cell, colIdx) => `${rackId}-${String.fromCharCode(65 + rowIdx)}${colIdx + 1}`),
           );
@@ -6091,10 +5640,13 @@
             config.height,
             config.levels,
             config.cells,
-            pos,
-            true,
+            preservedCells, // 셀 데이터 전달
+            true, // isNewRack
             templateId,
           );
+
+          // 위치와 회전 복원
+          newRack.position.copy(pos);
           newRack.rotation.y = rotation;
           newRack.userData.config.rotation = THREE.MathUtils.radToDeg(rotation);
           newRack.updateMatrixWorld(true);
@@ -6752,6 +6304,26 @@
         .getElementById('save-template-changes')
         .addEventListener('click', saveTemplateChanges);
       document.getElementById('add-new-template').addEventListener('click', addNewTemplate);
+
+      // 템플릿 편집 모달 입력 필드에 디바운스된 미리보기 업데이트 추가 (기존 debounce 함수 재사용)
+      const debouncedUpdatePreview = debounce(updatePreviewRack, 300); // 300ms 디바운스
+
+      // 컬러피커와 다른 입력 필드에 이벤트 리스너 추가
+      document
+        .getElementById('edit-pillar-color')
+        .addEventListener('input', debouncedUpdatePreview);
+      document.getElementById('edit-shelf-color').addEventListener('input', debouncedUpdatePreview);
+      document
+        .getElementById('edit-pillar-thickness')
+        .addEventListener('input', debouncedUpdatePreview);
+      document
+        .getElementById('edit-shelf-thickness')
+        .addEventListener('input', debouncedUpdatePreview);
+      document
+        .getElementById('edit-diagonal-supports')
+        .addEventListener('change', updatePreviewRack);
+      document.getElementById('edit-shelf-plate').addEventListener('change', updatePreviewRack);
+      document.getElementById('edit-top-plate').addEventListener('change', updatePreviewRack);
 
       window.onload = init;
     </script>
